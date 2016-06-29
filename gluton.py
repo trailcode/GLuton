@@ -133,6 +133,8 @@ class ServoAdjustment(QMainWindow):
 
         self.inTime = False
 
+        for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
+
     def ensureAnimation(self):
         pass
 
