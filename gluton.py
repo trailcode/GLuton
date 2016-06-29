@@ -147,23 +147,16 @@ class ServoAdjustment(QMainWindow):
         print('servoSliderChanged', index, value, self.names[index])
         t = self.timeSlider.value()
         if index == self.names.index('time'):
-            self.inTime = True
-            self.timeLabel.setText(str(value))
-            if False and t in self.animation:
-                print('Got it')
-                animation = self.animation[t]
-                for i in range(len(animation)):
-                    #print('v', animation[i])
-                    self.servoValueSliders[i].setValue(animation[i])
-            else:
 
-                keyPair = self.getCurrKeyPair()
-                if keyPair is not None:
-                    A = self.animation[keyPair[0]]
-                    B = self.animation[keyPair[1]]
-                    for i in range(len(A)):
-                        intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                        self.servoValueSliders[i].setValue(intp(t))
+            self.timeLabel.setText(str(value))
+            keyPair = self.getCurrKeyPair()
+            if keyPair is None: return
+            self.inTime = True
+            A = self.animation[keyPair[0]]
+            B = self.animation[keyPair[1]]
+            for i in range(len(A)):
+                intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                self.servoValueSliders[i].setValue(intp(t))
             self.inTime = False
 
 
