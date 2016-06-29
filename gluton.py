@@ -16,6 +16,16 @@ except: pass
 
 def _str(s): return str.encode(str(s));
 
+import operator
+
+def get_truth(inp, relate, cut):
+    ops = {'>': operator.gt,
+           '<': operator.lt,
+           '>=': operator.ge,
+           '<=': operator.le,
+           '=': operator.eq}
+    return ops[relate](inp, cut)
+
 class ServoAdjustment(QMainWindow):
     def goToDoctor(self, extraData):
         print(extraData)
@@ -111,32 +121,36 @@ class ServoAdjustment(QMainWindow):
 
         #self.animation
         def prev():
-            print("Prev")
+            print("Prev", self.getCurrKeyPair()[0])
+            self.timeSlider.setValue(self.getCurrKeyPair()[0])
 
         def next():
-            print("Next")
+            print("Next", self.getCurrKeyPair('>')[1])
+            self.timeSlider.setValue(self.getCurrKeyPair('>')[1])
 
         self.ui.pushButtonPrevKey.clicked.connect(prev)
         self.ui.pushButtonNextKey.clicked.connect(next)
 
+        self.inTime = False
+
     def ensureAnimation(self):
         pass
 
-    def getCurrKeyPair(self):
-        t = self.timeSlider.value()
+    def getCurrKeyPair(self, cmp = '>='):
         keys = list(self.animation.keys())
         keys.sort()
-        # print('keys', keys)
+        print('keys', keys)
         for i in range(len(keys)):
-            if keys[i] >= t: return (keys[i - 1], keys[i])
+            if get_truth(keys[i], cmp, self.timeSlider.value()): return (keys[i - 1], keys[i])
 
     def servoSliderChanged(self, index, value):
         print('servoSliderChanged', index, value, self.names[index])
         t = self.timeSlider.value()
         if index == self.names.index('time'):
+            self.inTime = True
             self.timeLabel.setText(str(value))
-            if t in self.animation:
-                #print('Got it')
+            if False and t in self.animation:
+                print('Got it')
                 animation = self.animation[t]
                 for i in range(len(animation)):
                     #print('v', animation[i])
@@ -150,8 +164,13 @@ class ServoAdjustment(QMainWindow):
                     for i in range(len(A)):
                         intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
                         self.servoValueSliders[i].setValue(intp(t))
+            self.inTime = False
+
 
         else:
+            print('self.inTime', self.inTime)
+            if self.inTime: return
+
             self.servoValueLabels[index].setText(str(value))
             self.animation[t] = []
 
