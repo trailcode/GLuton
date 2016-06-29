@@ -110,10 +110,25 @@ class ServoAdjustment(QMainWindow):
         #self.servoValueSliders[self.names.]
 
         #self.animation
+        def prev():
+            print("Prev")
+
+        def next():
+            print("Next")
+
+        self.ui.pushButtonPrevKey.clicked.connect(prev)
+        self.ui.pushButtonNextKey.clicked.connect(next)
 
     def ensureAnimation(self):
         pass
 
+    def getCurrKeyPair(self):
+        t = self.timeSlider.value()
+        keys = list(self.animation.keys())
+        keys.sort()
+        # print('keys', keys)
+        for i in range(len(keys)):
+            if keys[i] >= t: return (keys[i - 1], keys[i])
 
     def servoSliderChanged(self, index, value):
         print('servoSliderChanged', index, value, self.names[index])
@@ -127,36 +142,14 @@ class ServoAdjustment(QMainWindow):
                     #print('v', animation[i])
                     self.servoValueSliders[i].setValue(animation[i])
             else:
-                #print('erwere')
-                keys = list(self.animation.keys())
-                keys.sort()
-                #print('keys', keys)
-                for i in range(len(keys)):
-                    if keys[i] >= t:
-                        #print('Found it', keys[i - 1], keys[i], t)
-                        A = self.animation[keys[i - 1]]
-                        B = self.animation[keys[i]]
-                        #print('self.animation[keys[i]]', self.animation[keys[i]])
 
-                        #print('A', A, 'B', B, 't', t, 'keys[i - 1]', keys[i - 1], 'keys[i]', keys[i])
-
-                        for j in range(len(A)):
-                            intp = interp1d((keys[i - 1], keys[i]),(A[j], B[j]))
-                            #print('intp', intp(t))
-                            self.servoValueSliders[j].setValue(intp(t))
-
-                        break
-
-                for i in range(len(keys)):
-
-                    x = keys[i]
-
-                    for j in range(len(self.servoValueSliders)):
-                        y = self.servoValueSliders[j].value()
-                        #print('x',x,'y',y)
-
-                print('-----------------------')
-                #print(keys)
+                keyPair = self.getCurrKeyPair()
+                if keyPair is not None:
+                    A = self.animation[keyPair[0]]
+                    B = self.animation[keyPair[1]]
+                    for i in range(len(A)):
+                        intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                        self.servoValueSliders[i].setValue(intp(t))
 
         else:
             self.servoValueLabels[index].setText(str(value))
