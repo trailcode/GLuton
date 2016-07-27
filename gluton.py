@@ -1,6 +1,7 @@
 import sys
 import PyQt4
 from PyQt4.QtGui import QMainWindow
+#from OpenGL.GL import *
 from PyQt4 import uic, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -10,9 +11,11 @@ import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
 
+"""
 s = None
 try: s = serial.Serial(port='/dev/cu.wchusbserial1420', baudrate=115200)
 except: pass
+"""
 
 def _str(s): return str.encode(str(s));
 
@@ -27,9 +30,6 @@ def get_truth(inp, relate, cut):
     return ops[relate](inp, cut)
 
 class ServoAdjustment(QMainWindow):
-    def goToDoctor(self, extraData):
-        print(extraData)
-
     def __init__(self):
         super(ServoAdjustment, self).__init__()
         self.ui = uic.loadUi("gluton.ui", self)
@@ -117,23 +117,14 @@ class ServoAdjustment(QMainWindow):
 
         self.animation = {}
 
-        #self.servoValueSliders[self.names.]
-
-        #self.animation
-        def prev():
-            print("Prev", self.getCurrKeyPair()[0])
-            self.timeSlider.setValue(self.getCurrKeyPair()[0])
-
-        def next():
-            print("Next", self.getCurrKeyPair('>')[1])
-            self.timeSlider.setValue(self.getCurrKeyPair('>')[1])
-
-        self.ui.pushButtonPrevKey.clicked.connect(prev)
-        self.ui.pushButtonNextKey.clicked.connect(next)
+        self.ui.pushButtonPrevKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair()[0]))
+        self.ui.pushButtonNextKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair('>')[1]))
 
         self.inTime = False
 
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
+
+        print('Done')
 
     def ensureAnimation(self):
         pass
@@ -227,13 +218,19 @@ class ServoAdjustment(QMainWindow):
         c = "1 " + str(int(i)) + " " + str(int(v)) + "\r\n"
         print(c)
 
-        if s is None: return
+    """
 
-        s.write(_str(c))
+        try:
+            if s is None: return
 
-        s.write(_str('2 1\r\n'))
-        r = str(s.readline()).strip()
-        print('r', r)
+            s.write(_str(c))
+
+            s.write(_str('2 1\r\n'))
+            r = str(s.readline()).strip()
+            print('r', r)
+
+        except: pass
+        """
         #s.write(_str('3 0\r\n'))
 
         #s.write("1 " + _str(int(i)) + " " + _str(int(v)) + "\r\n")
