@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1148</width>
-    <height>507</height>
+    <height>534</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,25 @@
           <number>0</number>
          </property>
          <item>
+          <widget class="QLabel" name="label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Servo:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QSpinBox" name="spinBoxServo">
            <property name="maximumSize">
             <size>
@@ -86,23 +105,17 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
-           <property name="maximumSize">
+           <property name="sizeHint" stdset="0">
             <size>
-             <width>16777215</width>
-             <height>24</height>
+             <width>40</width>
+             <height>20</height>
             </size>
            </property>
-           <property name="text">
-            <string>Servo:</string>
-           </property>
-          </widget>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -317,9 +330,12 @@
      </layout>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayoutTime"/>
+    </item>
+    <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">

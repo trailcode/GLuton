@@ -93,22 +93,28 @@ class ServoAdjustment(QMainWindow):
             valueLabel = QLabel()
             valueLabel.setText(str(slider.value()))
             valueLabel.setFixedWidth(100)
-            if i != 'time':
-                self.servoValueSliders.append(slider)
-                self.servoValueLabels.append(valueLabel)
 
-            else:
-                self.timeSlider = slider
-                self.timeLabel = valueLabel
 
             global _self
             _self = self
             exec('slider.valueChanged.connect(lambda x: _self.f' + str(index) + '(x))')
+
             box = QHBoxLayout()
             box.addWidget(label)
             box.addWidget(slider)
             box.addWidget(valueLabel)
-            self.ui.verticalLayoutServoPositions.addLayout(box)
+
+            if i != 'time':
+                self.servoValueSliders.append(slider)
+                self.servoValueLabels.append(valueLabel)
+                self.ui.verticalLayoutServoPositions.addLayout(box)
+
+            else:
+                self.timeSlider = slider
+                self.timeLabel = valueLabel
+                self.ui.horizontalLayoutTime.addLayout(box)
+
+
 
         print('self.timeSlider', self.timeSlider)
 
@@ -282,5 +288,6 @@ if __name__ == '__main__':
     window = ServoAdjustment()
 
     window.show()
+    window.raise_()
 
     sys.exit(app.exec_())
