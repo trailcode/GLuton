@@ -1,7 +1,8 @@
 import sys
 import PyQt4
 from PyQt4.QtGui import QMainWindow
-#from OpenGL.GL import *
+from PyQt4.QtOpenGL import *
+from OpenGL.GL import *
 from PyQt4 import uic, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -29,6 +30,33 @@ def get_truth(inp, relate, cut):
            '=': operator.eq}
     return ops[relate](inp, cut)
 
+class WfWidget(QGLWidget):
+    def __init__(self, parent = None):
+        super(WfWidget, self).__init__(parent)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHeightForWidth(True)
+        self.setSizePolicy(sizePolicy)
+
+    def paintGL(self):
+        glClear(GL_COLOR_BUFFER_BIT)
+        glColor3f(0.0, 0.0, 1.0)
+        glRectf(-5, -5, 5, 5)
+        glColor3f(1.0, 0.0, 0.0)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(20, 20, 0)
+        glEnd()
+
+    def resizeGL(self, w, h):
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        glOrtho(-50, 50, -50, 50, -50.0, 50.0)
+        glViewport(0, 0, w, h)
+
+    def initializeGL(self):
+        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT)
+
 class ServoAdjustment(QMainWindow):
     def __init__(self):
         super(ServoAdjustment, self).__init__()
@@ -36,17 +64,21 @@ class ServoAdjustment(QMainWindow):
         self.ui.show()
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
 
+        self.canvas = WfWidget()
+        #self.canvas.setSizePolicy(QSizePolicy.Policy.
+        self.ui.canvasLayout.addWidget(self.canvas)
+
         """
         self.mins = [150,160,170,180,150,150,150,150,150,150,150,150,150,150,150,150]
         self.maxs = [560,570,580,550,550,550,550,550,550,550,550,550,550,550,550,550]
         self.offsets = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         """
 
-        """
+
         self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Sholder', 'Left Elbo', 'Left Wrist',
                       'Right Ankle', 'Right Knee', 'Right Hip', 'Right Sholder', 'Right Elbo', 'Right Wrist', 'time']
-        """
-        self.names = ['Left Ankle', 'Left Knee', 'time']
+
+        #self.names = ['Left Ankle', 'Left Knee', 'time']
         self.servoValueSliders = []
         self.servoValueLabels = []
 
