@@ -31,26 +31,31 @@ def get_truth(inp, relate, cut):
     return ops[relate](inp, cut)
 
 class WfWidget(QGLWidget):
-    def __init__(self, parent = None):
+    def __init__(self, servoAdjustment, parent = None):
         super(WfWidget, self).__init__(parent)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
+        self.sliders = servoAdjustment.sliders
+        self.servoAdjustment = servoAdjustment
+
 
     def paintGL(self):
+        t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(0.0, 0.0, 1.0)
         glRectf(-5, -5, 5, 5)
         glColor3f(1.0, 0.0, 0.0)
         glBegin(GL_LINES)
-        glVertex3f(0, 0, 0)
-        glVertex3f(20, 20, 0)
+        glVertex3f(t, 0, 0)
+        glVertex3f(t, 256, 0)
+        print(self.sliders)
         glEnd()
 
     def resizeGL(self, w, h):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(-50, 50, -50, 50, -50.0, 50.0)
+        glOrtho(0, 256, 0, 256, -50.0, 50.0)
         glViewport(0, 0, w, h)
 
     def initializeGL(self):
@@ -63,8 +68,8 @@ class ServoAdjustment(QMainWindow):
         self.ui = uic.loadUi("gluton.ui", self)
         self.ui.show()
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
-
-        self.canvas = WfWidget()
+        self.sliders = []
+        self.canvas = WfWidget(self)
         #self.canvas.setSizePolicy(QSizePolicy.Policy.
         self.ui.canvasLayout.addWidget(self.canvas)
 
@@ -90,6 +95,7 @@ class ServoAdjustment(QMainWindow):
             label.setAlignment(Qt.AlignRight)
             slider = QSlider(Qt.Horizontal)
             slider.setMaximum(256)
+            self.sliders += [slider]
             valueLabel = QLabel()
             valueLabel.setText(str(slider.value()))
             valueLabel.setFixedWidth(100)
@@ -117,7 +123,7 @@ class ServoAdjustment(QMainWindow):
 
 
         print('self.timeSlider', self.timeSlider)
-
+        print('self.sliders', self.sliders)
         #print(self.servoValueSliders)
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
@@ -144,16 +150,18 @@ class ServoAdjustment(QMainWindow):
 
         self.servoChanged(0)
 
+        self.animation = {}
+
         def save():
-            print('save')
+            #print('save', self.mins, self.maxs, self.offsets, self.poses, self.poses2)
+            #print('save', self.mins, self.maxs, self.offsets, 'self.poses', self.poses)
+            print('save', self.mins, self.maxs, self.offsets, self.animation)
 
         def reset():
             print('reset')
 
         self.ui.pushButtonSave.clicked.connect(save)
         self.ui.pushButtonReset.clicked.connect(reset)
-
-        self.animation = {}
 
         self.ui.pushButtonPrevKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair()[0]))
         self.ui.pushButtonNextKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair('>')[1]))
@@ -179,6 +187,11 @@ class ServoAdjustment(QMainWindow):
         t = self.timeSlider.value()
         if index == self.names.index('time'):
 
+            self.canvas.paintGL()
+            self.canvas.swapBuffers()
+            self.canvas.repaint()
+
+
             self.timeLabel.setText(str(value))
             keyPair = self.getCurrKeyPair()
             if keyPair is None: return
@@ -189,6 +202,8 @@ class ServoAdjustment(QMainWindow):
                 intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
                 self.servoValueSliders[i].setValue(intp(t))
             self.inTime = False
+
+
 
 
         else:
