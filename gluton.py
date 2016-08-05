@@ -49,7 +49,30 @@ class WfWidget(QGLWidget):
         glBegin(GL_LINES)
         glVertex3f(t, 0, 0)
         glVertex3f(t, 256, 0)
-        print(self.sliders)
+        glEnd()
+        glPointSize(4)
+        glBegin(GL_POINTS)
+        """
+        print('======================')
+        print(self.servoAdjustment.animation)
+        for i in self.servoAdjustment.animation:
+            print(self.servoAdjustment.animation[i])
+            for slider in self.sliders:
+                print(slider.value())
+        print('---------------')
+        """
+        glColor3f(1,1,1)
+        #
+        for i in self.servoAdjustment.animation:
+            for t in self.servoAdjustment.animation[i]:
+                glVertex2d(i,t)
+                #print('t',t)
+                #self.servoAdjustment.timeSlider.setValue(10)
+                #l = list(zip(self.servoAdjustment.animation[i], self.sliders))
+                #print(l)
+
+
+
         glEnd()
 
     def resizeGL(self, w, h):
