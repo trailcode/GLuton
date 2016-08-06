@@ -103,8 +103,8 @@ class ServoAdjustment(QMainWindow):
         """
 
 
-        self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Sholder', 'Left Elbo', 'Left Wrist',
-                      'Right Ankle', 'Right Knee', 'Right Hip', 'Right Sholder', 'Right Elbo', 'Right Wrist', 'time']
+        self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
+                      'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
         #self.names = ['Left Ankle', 'Left Knee', 'time']
         self.servoValueSliders = []
@@ -145,8 +145,8 @@ class ServoAdjustment(QMainWindow):
 
 
 
-        print('self.timeSlider', self.timeSlider)
-        print('self.sliders', self.sliders)
+        #print('self.timeSlider', self.timeSlider)
+        #print('self.sliders', self.sliders)
         #print(self.servoValueSliders)
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
@@ -154,12 +154,10 @@ class ServoAdjustment(QMainWindow):
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
 
-        self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-        self.poses2 = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
+        self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        self.animation = {}
+        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -173,12 +171,14 @@ class ServoAdjustment(QMainWindow):
 
         self.servoChanged(0)
 
-        self.animation = {}
-
         def save():
             #print('save', self.mins, self.maxs, self.offsets, self.poses, self.poses2)
             #print('save', self.mins, self.maxs, self.offsets, 'self.poses', self.poses)
-            print('save', self.mins, self.maxs, self.offsets, self.animation)
+            print('save')
+            print('  self.mins =', self.mins)
+            print('  self.maxs =', self.maxs)
+            print('  self.offsets =', self.offsets)
+            print('  self.animation =', self.animation)
 
         def reset():
             print('reset')
@@ -201,12 +201,12 @@ class ServoAdjustment(QMainWindow):
     def getCurrKeyPair(self, cmp = '>='):
         keys = list(self.animation.keys())
         keys.sort()
-        print('keys', keys)
+        #print('keys', keys)
         for i in range(len(keys)):
             if get_truth(keys[i], cmp, self.timeSlider.value()): return (keys[i - 1], keys[i])
 
     def servoSliderChanged(self, index, value):
-        print('servoSliderChanged', index, value, self.names[index])
+        #print('servoSliderChanged', index, value, self.names[index])
         t = self.timeSlider.value()
         if index == self.names.index('time'):
 
@@ -221,6 +221,8 @@ class ServoAdjustment(QMainWindow):
             self.inTime = True
             A = self.animation[keyPair[0]]
             B = self.animation[keyPair[1]]
+            print('A',A)
+            print('B',B)
             for i in range(len(A)):
                 intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
                 self.servoValueSliders[i].setValue(intp(t))
@@ -230,7 +232,7 @@ class ServoAdjustment(QMainWindow):
 
 
         else:
-            print('self.inTime', self.inTime)
+            #print('self.inTime', self.inTime)
             if self.inTime: return
 
             self.servoValueLabels[index].setText(str(value))
@@ -258,7 +260,7 @@ class ServoAdjustment(QMainWindow):
         self.setServo()
 
     def servoChanged(self, value):
-        print('Servo ', value)
+        #print('Servo ', value)
         self.currServo = value
         self.ui.horizontalSliderMin.setValue(self.mins[value])
         self.ui.horizontalSliderMax.setValue(self.maxs[value])
