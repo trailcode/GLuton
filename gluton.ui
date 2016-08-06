@@ -18,6 +18,18 @@
     <bool>true</bool>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>10</number>
+    </property>
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>10</number>
+    </property>
+    <property name="bottomMargin">
+     <number>3</number>
+    </property>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
       <property name="spacing">
@@ -192,6 +204,12 @@
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
        <widget class="QLabel" name="labelOffset">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Offset: 0.0</string>
         </property>
@@ -199,6 +217,12 @@
       </item>
       <item>
        <widget class="QSlider" name="horizontalSliderOffset">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16</height>
+         </size>
+        </property>
         <property name="maximum">
          <number>2048</number>
         </property>
@@ -335,13 +359,16 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
         <string>Tab 1</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="canvasLayout">
           <property name="sizeConstraint">
@@ -357,7 +384,13 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
+         <widget class="QWidget" name="sliderWidget" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
+           </item>
+          </layout>
+         </widget>
         </item>
        </layout>
       </widget>

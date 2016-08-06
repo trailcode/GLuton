@@ -1,3 +1,4 @@
+import os
 import sys
 import PyQt4
 from PyQt4.QtGui import QMainWindow
@@ -42,6 +43,7 @@ class WfWidget(QGLWidget):
 
 
     def paintGL(self):
+        #return
         t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(0.0, 0.0, 1.0)
@@ -62,39 +64,70 @@ class WfWidget(QGLWidget):
         glEnd()
         for j in range(len(self.servoAdjustment.animation[0])):
             glBegin(GL_LINE_STRIP)
-            for i in range(256):
+            for i in range(0,256,4):
                 keyPair = self.servoAdjustment.getCurrKeyPair(value = i)
                 if keyPair is None: continue
-                self.inTime = True
                 A = self.servoAdjustment.animation[keyPair[0]]
                 B = self.servoAdjustment.animation[keyPair[1]]
                 intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
                 glVertex2d(i, intp(i))
             glEnd()
 
-
-
-
     def resizeGL(self, w, h):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(0, 256, 0, 256, -50.0, 50.0)
+        padd = 5
+        glOrtho(-padd, 256 + padd, -padd, 256 + padd, -50.0, 50.0)
         glViewport(0, 0, w, h)
 
     def initializeGL(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
 
+
+class MDIArea(QMdiArea):
+    def __init__(self, background_pixmap, parent=None):
+
+        QMdiArea.__init__(self, parent)
+        self.background_pixmap = background_pixmap
+        self.centered = False
+
+    def paintEvent(self, event):
+
+        painter = QPainter()
+        painter.begin(self.viewport())
+
+        if not self.centered:
+            painter.drawPixmap(0, 0, self.width(), self.height(), self.background_pixmap)
+        else:
+            painter.fillRect(event.rect(), self.palette().color(QPalette.Window))
+            x = (self.width() - self.display_pixmap.width()) / 2
+            y = (self.height() - self.display_pixmap.height()) / 2
+            painter.drawPixmap(x, y, self.display_pixmap)
+
+        painter.end()
+
+    def resizeEvent(self, event):
+
+        self.display_pixmap = self.background_pixmap.scaled(event.size(), Qt.KeepAspectRatio)
+
+
 class ServoAdjustment(QMainWindow):
     def __init__(self):
         super(ServoAdjustment, self).__init__()
         self.ui = uic.loadUi("gluton.ui", self)
         self.ui.show()
+        self.ui.sliderWidget.setStyleSheet("background-image: url(logo.png);background-attachment: fixed")
+            #setPixmap(QPixmap(os.getcwd() + "/logo.png"))
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
         self.sliders = []
         self.canvas = WfWidget(self)
         #self.canvas.setSizePolicy(QSizePolicy.Policy.
         self.ui.canvasLayout.addWidget(self.canvas)
+
+        self.background_pixmap = QPixmap('logo.png')
+
+
 
         """
         self.mins = [150,160,170,180,150,150,150,150,150,150,150,150,150,150,150,150]
@@ -109,6 +142,7 @@ class ServoAdjustment(QMainWindow):
         #self.names = ['Left Ankle', 'Left Knee', 'time']
         self.servoValueSliders = []
         self.servoValueLabels = []
+        self.center()
 
         for i,index in zip(self.names, range(0, len(self.names))):
             exec('ServoAdjustment.f' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
@@ -130,8 +164,17 @@ class ServoAdjustment(QMainWindow):
 
             box = QHBoxLayout()
             box.addWidget(label)
+            label.setMaximumHeight(15)
+            slider.setMaximumHeight(15)
+            valueLabel.setMaximumHeight(15)
+            """
+            label.setContentsMargins(0, 0, 0, 0)
+            slider.setContentsMargins(0, 0, 0, 0)
+            valueLabel.setContentsMargins(0, 0, 0, 0)
+            """
             box.addWidget(slider)
             box.addWidget(valueLabel)
+            box.setContentsMargins(0,0,0,0)
 
             if i != 'time':
                 self.servoValueSliders.append(slider)
@@ -193,7 +236,12 @@ class ServoAdjustment(QMainWindow):
 
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
 
-        print('Done')
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
 
     def ensureAnimation(self):
         pass
@@ -202,7 +250,6 @@ class ServoAdjustment(QMainWindow):
         if value is None: value = self.timeSlider.value()
         keys = list(self.animation.keys())
         keys.sort()
-        print('keys', keys)
         for i in range(len(keys)):
             if get_truth(keys[i], cmp, value): return (keys[i - 1], keys[i])
 
@@ -222,15 +269,10 @@ class ServoAdjustment(QMainWindow):
             self.inTime = True
             A = self.animation[keyPair[0]]
             B = self.animation[keyPair[1]]
-            print('A',A)
-            print('B',B)
             for i in range(len(A)):
                 intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
                 self.servoValueSliders[i].setValue(intp(t))
             self.inTime = False
-
-
-
 
         else:
             #print('self.inTime', self.inTime)
@@ -322,12 +364,9 @@ class ServoAdjustment(QMainWindow):
         print('self.poses =',self.poses)
 
 
-
-
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     window = ServoAdjustment()
-
     window.show()
     window.raise_()
 
