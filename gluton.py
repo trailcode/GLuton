@@ -7,6 +7,7 @@ from PyQt4 import uic, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
+from itertools import product
 
 import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
@@ -52,28 +53,27 @@ class WfWidget(QGLWidget):
         glEnd()
         glPointSize(4)
         glBegin(GL_POINTS)
-        """
-        print('======================')
-        print(self.servoAdjustment.animation)
-        for i in self.servoAdjustment.animation:
-            print(self.servoAdjustment.animation[i])
-            for slider in self.sliders:
-                print(slider.value())
-        print('---------------')
-        """
         glColor3f(1,1,1)
-        #
+
         for i in self.servoAdjustment.animation:
             for t in self.servoAdjustment.animation[i]:
                 glVertex2d(i,t)
-                #print('t',t)
-                #self.servoAdjustment.timeSlider.setValue(10)
-                #l = list(zip(self.servoAdjustment.animation[i], self.sliders))
-                #print(l)
-
-
 
         glEnd()
+        for j in range(len(self.servoAdjustment.animation[0])):
+            glBegin(GL_LINE_STRIP)
+            for i in range(256):
+                keyPair = self.servoAdjustment.getCurrKeyPair(value = i)
+                if keyPair is None: continue
+                self.inTime = True
+                A = self.servoAdjustment.animation[keyPair[0]]
+                B = self.servoAdjustment.animation[keyPair[1]]
+                intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
+                glVertex2d(i, intp(i))
+            glEnd()
+
+
+
 
     def resizeGL(self, w, h):
         glMatrixMode(GL_PROJECTION)
@@ -198,12 +198,13 @@ class ServoAdjustment(QMainWindow):
     def ensureAnimation(self):
         pass
 
-    def getCurrKeyPair(self, cmp = '>='):
+    def getCurrKeyPair(self, cmp = '>=', value=None):
+        if value is None: value = self.timeSlider.value()
         keys = list(self.animation.keys())
         keys.sort()
-        #print('keys', keys)
+        print('keys', keys)
         for i in range(len(keys)):
-            if get_truth(keys[i], cmp, self.timeSlider.value()): return (keys[i - 1], keys[i])
+            if get_truth(keys[i], cmp, value): return (keys[i - 1], keys[i])
 
     def servoSliderChanged(self, index, value):
         #print('servoSliderChanged', index, value, self.names[index])
