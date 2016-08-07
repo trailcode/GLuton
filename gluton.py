@@ -40,7 +40,8 @@ class WfWidget(QGLWidget):
         self.setSizePolicy(sizePolicy)
         self.sliders = servoAdjustment.sliders
         self.servoAdjustment = servoAdjustment
-        self.colors = [(0,0,0),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),(192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
+        self.colors = [(0,0,0),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
+                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
 
     def paintGL(self):
         #return
@@ -66,7 +67,13 @@ class WfWidget(QGLWidget):
 
         glEnd()
         c = 1
+        print(self.servoAdjustment.currBeingEdited)
         for j in range(len(self.servoAdjustment.animation[0])):
+
+            if j == self.servoAdjustment.currBeingEdited:
+                glLineWidth(4)
+            else:
+                glLineWidth(1)
             glColor3f(self.colors[c][0], self.colors[c][1], self.colors[c][2])
             c += 1
             glBegin(GL_LINE_STRIP)
@@ -105,6 +112,8 @@ class ServoAdjustment(QMainWindow):
 
         self.background_pixmap = QPixmap('logo.png')
 
+        self.currBeingEdited = 0
+
         self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                       'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
@@ -120,25 +129,27 @@ class ServoAdjustment(QMainWindow):
             label.setFixedWidth(100)
             label.setAlignment(Qt.AlignRight)
             class MySlider(QSlider):
-                def __init__(self, direction, parent=None):
+                def __init__(self, c, servoAdjustment, direction, parent=None):
                     super(MySlider, self).__init__(direction, parent)
                     self.setMouseTracking(True)
+                    self.number = index
+                    self.servoAdjustment = servoAdjustment
 
                 def enterEvent(self, event):
-                    print("Enter")
+
+                    self.servoAdjustment.currBeingEdited = self.number
+                    self.servoAdjustment.canvas.paintGL()
+                    self.servoAdjustment.canvas.swapBuffers()
+                    self.servoAdjustment.canvas.repaint()
                     #self.setStyleSheet("background-color:#45b545;")
 
-                def leaveEvent(self, event):
-                    self.setStyleSheet("background-color:yellow;")
-                    #print("Leave")
             #slider = QSlider(Qt.Horizontal)
-            slider = MySlider(Qt.Horizontal)
+            slider = MySlider(index, self, Qt.Horizontal)
             slider.setMaximum(256)
             self.sliders += [slider]
             valueLabel = QLabel()
             valueLabel.setText(str(slider.value()))
             valueLabel.setFixedWidth(100)
-
 
             global _self
             _self = self
