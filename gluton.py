@@ -84,40 +84,12 @@ class WfWidget(QGLWidget):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
 
-
-class MDIArea(QMdiArea):
-    def __init__(self, background_pixmap, parent=None):
-
-        QMdiArea.__init__(self, parent)
-        self.background_pixmap = background_pixmap
-        self.centered = False
-
-    def paintEvent(self, event):
-
-        painter = QPainter()
-        painter.begin(self.viewport())
-
-        if not self.centered:
-            painter.drawPixmap(0, 0, self.width(), self.height(), self.background_pixmap)
-        else:
-            painter.fillRect(event.rect(), self.palette().color(QPalette.Window))
-            x = (self.width() - self.display_pixmap.width()) / 2
-            y = (self.height() - self.display_pixmap.height()) / 2
-            painter.drawPixmap(x, y, self.display_pixmap)
-
-        painter.end()
-
-    def resizeEvent(self, event):
-
-        self.display_pixmap = self.background_pixmap.scaled(event.size(), Qt.KeepAspectRatio)
-
-
 class ServoAdjustment(QMainWindow):
     def __init__(self):
         super(ServoAdjustment, self).__init__()
         self.ui = uic.loadUi("gluton.ui", self)
         self.ui.show()
-        self.ui.sliderWidget.setStyleSheet("background-image: url(logo.png);background-attachment: fixed")
+        #self.ui.sliderWidget.setStyleSheet("background-image: url(logo.png);background-attachment: fixed")
             #setPixmap(QPixmap(os.getcwd() + "/logo.png"))
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
         self.sliders = []
@@ -287,7 +259,7 @@ class ServoAdjustment(QMainWindow):
 
             self.animation[t] = values
 
-            print(values)
+
 
     def poseChanged(self, value):
         print('poseChanged', value)
@@ -337,7 +309,7 @@ class ServoAdjustment(QMainWindow):
             pass
 
         c = "1 " + str(int(i)) + " " + str(int(v)) + "\r\n"
-        print(c)
+        #print(c)
 
     """
 

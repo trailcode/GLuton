@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1155</width>
-    <height>691</height>
+    <width>642</width>
+    <height>685</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -250,18 +250,37 @@
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_8">
-      <item>
+      <item alignment="Qt::AlignHCenter">
        <widget class="QPushButton" name="pushButtonDumpValues">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Dump Values</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBoxPose"/>
+       <widget class="QSpinBox" name="spinBoxPose">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
+       </widget>
       </item>
-      <item>
+      <item alignment="Qt::AlignHCenter">
        <widget class="QPushButton" name="pushButtonZeroPos">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Zero Pos</string>
         </property>
@@ -274,6 +293,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
         </property>
         <property name="maximumSize">
          <size>
@@ -288,6 +313,12 @@
       </item>
       <item>
        <widget class="QLabel" name="labelKey">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Key: 0</string>
         </property>
@@ -300,6 +331,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
         </property>
         <property name="maximumSize">
          <size>
@@ -314,6 +351,12 @@
       </item>
       <item>
        <spacer name="horizontalSpacer">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -327,6 +370,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonSave">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Save</string>
         </property>
@@ -334,6 +383,12 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonReset">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Reset</string>
         </property>
@@ -361,13 +416,6 @@
       </widget>
      </widget>
     </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_9">
-      <item>
-       <widget class="QWidget" name="sliderWidget" native="true"/>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -375,7 +423,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1155</width>
+     <width>642</width>
      <height>22</height>
     </rect>
    </property>
