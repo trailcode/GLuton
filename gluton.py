@@ -105,15 +105,6 @@ class ServoAdjustment(QMainWindow):
 
         self.background_pixmap = QPixmap('logo.png')
 
-
-
-        """
-        self.mins = [150,160,170,180,150,150,150,150,150,150,150,150,150,150,150,150]
-        self.maxs = [560,570,580,550,550,550,550,550,550,550,550,550,550,550,550,550]
-        self.offsets = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        """
-
-
         self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                       'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
@@ -128,7 +119,20 @@ class ServoAdjustment(QMainWindow):
             label.setText(i + ':')
             label.setFixedWidth(100)
             label.setAlignment(Qt.AlignRight)
-            slider = QSlider(Qt.Horizontal)
+            class MySlider(QSlider):
+                def __init__(self, direction, parent=None):
+                    super(MySlider, self).__init__(direction, parent)
+                    self.setMouseTracking(True)
+
+                def enterEvent(self, event):
+                    print("Enter")
+                    #self.setStyleSheet("background-color:#45b545;")
+
+                def leaveEvent(self, event):
+                    self.setStyleSheet("background-color:yellow;")
+                    #print("Leave")
+            #slider = QSlider(Qt.Horizontal)
+            slider = MySlider(Qt.Horizontal)
             slider.setMaximum(256)
             self.sliders += [slider]
             valueLabel = QLabel()
@@ -164,21 +168,20 @@ class ServoAdjustment(QMainWindow):
                 self.timeLabel = valueLabel
                 self.ui.horizontalLayoutTime.addLayout(box)
 
-
-
-        #print('self.timeSlider', self.timeSlider)
-        #print('self.sliders', self.sliders)
-        #print(self.servoValueSliders)
+        self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
-
-
-        self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        self.animation = {}
-        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
+                          18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          165: [113, 101, 71, 126, 34, 126, 126, 126, 126, 126, 126, 126],
+                          151: [153, 106, 124, 106, 0, 106, 106, 106, 106, 106, 106, 106],
+                          177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89],
+                          76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -193,9 +196,6 @@ class ServoAdjustment(QMainWindow):
         self.servoChanged(0)
 
         def save():
-            #print('save', self.mins, self.maxs, self.offsets, self.poses, self.poses2)
-            #print('save', self.mins, self.maxs, self.offsets, 'self.poses', self.poses)
-            print('save')
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
             print('  self.offsets =', self.offsets)
@@ -232,15 +232,9 @@ class ServoAdjustment(QMainWindow):
             if get_truth(keys[i], cmp, value): return (keys[i - 1], keys[i])
 
     def servoSliderChanged(self, index, value):
-        #print('servoSliderChanged', index, value, self.names[index])
         t = self.timeSlider.value()
+
         if index == self.names.index('time'):
-
-            self.canvas.paintGL()
-            self.canvas.swapBuffers()
-            self.canvas.repaint()
-
-
             self.timeLabel.setText(str(value))
             keyPair = self.getCurrKeyPair()
             if keyPair is None: return
@@ -264,6 +258,10 @@ class ServoAdjustment(QMainWindow):
             for i in self.servoValueSliders: values += [i.value()]
 
             self.animation[t] = values
+
+        self.canvas.paintGL()
+        self.canvas.swapBuffers()
+        self.canvas.repaint()
 
 
 
@@ -317,7 +315,7 @@ class ServoAdjustment(QMainWindow):
         c = "1 " + str(int(i)) + " " + str(int(v)) + "\r\n"
         #print(c)
 
-    """
+        """
 
         try:
             if s is None: return
