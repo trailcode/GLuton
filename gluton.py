@@ -40,10 +40,11 @@ class WfWidget(QGLWidget):
         self.setSizePolicy(sizePolicy)
         self.sliders = servoAdjustment.sliders
         self.servoAdjustment = servoAdjustment
-
+        self.colors = [(0,0,0),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),(192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
 
     def paintGL(self):
         #return
+
         t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(0.0, 0.0, 1.0)
@@ -56,15 +57,20 @@ class WfWidget(QGLWidget):
         glPointSize(4)
         glBegin(GL_POINTS)
         glColor3f(1,1,1)
-
         for i in self.servoAdjustment.animation:
+            c = 1
             for t in self.servoAdjustment.animation[i]:
+                glColor3f(self.colors[c][0],self.colors[c][1],self.colors[c][2])
+                c += 1
                 glVertex2d(i,t)
 
         glEnd()
+        c = 1
         for j in range(len(self.servoAdjustment.animation[0])):
+            glColor3f(self.colors[c][0], self.colors[c][1], self.colors[c][2])
+            c += 1
             glBegin(GL_LINE_STRIP)
-            for i in range(0,256,4):
+            for i in range(0,256,8):
                 keyPair = self.servoAdjustment.getCurrKeyPair(value = i)
                 if keyPair is None: continue
                 A = self.servoAdjustment.animation[keyPair[0]]
