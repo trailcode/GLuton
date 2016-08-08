@@ -9,7 +9,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
 from itertools import product
-
+from ServosPosGraph import ServosPosGraph
 import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
@@ -32,70 +32,7 @@ def get_truth(inp, relate, cut):
            '=': operator.eq}
     return ops[relate](inp, cut)
 
-class WfWidget(QGLWidget):
-    def __init__(self, servoAdjustment, parent = None):
-        super(WfWidget, self).__init__(parent)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy.setHeightForWidth(True)
-        self.setSizePolicy(sizePolicy)
-        self.sliders = servoAdjustment.sliders
-        self.servoAdjustment = servoAdjustment
-        self.colors = [(0,0,0),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
-                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
 
-    def paintGL(self):
-        #return
-
-        t = self.servoAdjustment.timeSlider.value()
-        glClear(GL_COLOR_BUFFER_BIT)
-        glColor3f(0.0, 0.0, 1.0)
-        glRectf(-5, -5, 5, 5)
-        glColor3f(1.0, 0.0, 0.0)
-        glBegin(GL_LINES)
-        glVertex3f(t, 0, 0)
-        glVertex3f(t, 256, 0)
-        glEnd()
-        glPointSize(4)
-        glBegin(GL_POINTS)
-        glColor3f(1,1,1)
-        for i in self.servoAdjustment.animation:
-            c = 1
-            for t in self.servoAdjustment.animation[i]:
-                glColor3f(self.colors[c][0],self.colors[c][1],self.colors[c][2])
-                c += 1
-                glVertex2d(i,t)
-
-        glEnd()
-        c = 1
-        print(self.servoAdjustment.currBeingEdited)
-        for j in range(len(self.servoAdjustment.animation[0])):
-
-            if j == self.servoAdjustment.currBeingEdited:
-                glLineWidth(4)
-            else:
-                glLineWidth(1)
-            glColor3f(self.colors[c][0], self.colors[c][1], self.colors[c][2])
-            c += 1
-            glBegin(GL_LINE_STRIP)
-            for i in range(0,256,8):
-                keyPair = self.servoAdjustment.getCurrKeyPair(value = i)
-                if keyPair is None: continue
-                A = self.servoAdjustment.animation[keyPair[0]]
-                B = self.servoAdjustment.animation[keyPair[1]]
-                intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
-                glVertex2d(i, intp(i))
-            glEnd()
-
-    def resizeGL(self, w, h):
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        padd = 5
-        glOrtho(-padd, 256 + padd, -padd, 256 + padd, -50.0, 50.0)
-        glViewport(0, 0, w, h)
-
-    def initializeGL(self):
-        glClearColor(0.0, 0.0, 0.0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT)
 
 class ServoAdjustment(QMainWindow):
     def __init__(self):
@@ -106,7 +43,7 @@ class ServoAdjustment(QMainWindow):
             #setPixmap(QPixmap(os.getcwd() + "/logo.png"))
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
         self.sliders = []
-        self.canvas = WfWidget(self)
+        self.canvas = ServosPosGraph(self)
         #self.canvas.setSizePolicy(QSizePolicy.Policy.
         self.ui.canvasLayout.addWidget(self.canvas)
 
