@@ -25,7 +25,6 @@ def _str(s): return str.encode(str(s));
 import operator
 
 def get_truth(inp, relate, cut):
-    print('lista',inp,relate,cut)
     ops = {'>': operator.gt,
            '<': operator.lt,
            '>=': operator.ge,
@@ -172,9 +171,6 @@ class ServoAdjustment(QMainWindow):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    def ensureAnimation(self):
-        pass
-
     def getCurrKeyPair(self, value=None, cmp = '>='):
         if value is None: value = self.timeSlider.value()
         keys = list(self.animation.keys())
@@ -185,7 +181,6 @@ class ServoAdjustment(QMainWindow):
     def getClosestKey(self, value=None, cmp = '>='):
         if value is None: value = self.timeSlider.value()
         pair = self.getCurrKeyPair(value=value)
-        #print('value - pair[0]', value - pair[0], 'pair[1]', value - pair[1])
         if value - pair[0] < pair[1] - value: return pair[0]
         return pair[1]
 

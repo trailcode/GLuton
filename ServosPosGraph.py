@@ -71,10 +71,12 @@ class ServosPosGraph(QGLWidget):
                 for i in range(len(y2)): glVertex2f(x2[i], y2[i])
                 glEnd()
 
-        else:
+        #else:
+        if True:
             for j in range(len(self.servoAdjustment.animation[0])):
 
                 """Change line width depending on current joint being edited"""
+                #print('j',j,self.servoAdjustment.currBeingEdited)
                 if j == self.servoAdjustment.currBeingEdited: glLineWidth(4)
                 else:                                         glLineWidth(1)
 
@@ -89,20 +91,10 @@ class ServosPosGraph(QGLWidget):
                     A = ani[keyPair[0]]
                     B = ani[keyPair[1]]
                     intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
-                    #glVertex2d(i, intp(i))
-
-                """
-                r = list(ani.keys())
-                r.sort()
-                for i in r:
-                    keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
-                    if keyPair is None: continue
-                    A = ani[keyPair[0]]
-                    B = ani[keyPair[1]]
-                    intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
                     glVertex2d(i, intp(i))
-                """
+
                 glEnd()
+            glLineWidth(1)
 
 
     def resizeGL(self, w, h):
