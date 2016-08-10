@@ -10,6 +10,7 @@ from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
 from itertools import product
 from ServosPosGraph import ServosPosGraph
+from ConsoleWidget import ConsoleWidget
 import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
@@ -157,6 +158,10 @@ class ServoAdjustment(QMainWindow):
         self.inTime = False
 
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
+
+        self.consoleVariables = {"canvas": self.canvas, "animation": self.animation}
+        self.console = ConsoleWidget(self, self.consoleVariables)
+        self.ui.consoleLayout.addWidget(self.console)
 
     def deleteCurrKey(self):
         self.animation.pop(self.getClosestKey())

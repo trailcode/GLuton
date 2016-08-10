@@ -410,22 +410,30 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayoutTime"/>
+     <layout class="QVBoxLayout" name="horizontalLayoutTime"/>
     </item>
     <item>
-     <widget class="QSplitter" name="splitter">
+     <widget class="QSplitter" name="splitter_2">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QHBoxLayout" name="canvasLayout">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetMinAndMaxSize</enum>
-        </property>
-       </layout>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QWidget" name="layoutWidget">
+        <layout class="QHBoxLayout" name="canvasLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinAndMaxSize</enum>
+         </property>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="layoutWidget_2">
+        <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
+       </widget>
       </widget>
-      <widget class="QWidget" name="layoutWidget_2">
-       <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
+      <widget class="QWidget" name="verticalLayoutWidget_2">
+       <layout class="QVBoxLayout" name="consoleLayout"/>
       </widget>
      </widget>
     </item>
