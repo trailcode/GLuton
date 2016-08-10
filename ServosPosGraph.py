@@ -1,6 +1,3 @@
-from PyQt4 import uic, QtGui
-from PyQt4.QtCore import *
-from PyQt4.QtGui import QMainWindow
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from PyQt4.QtGui import *
@@ -20,7 +17,6 @@ class ServosPosGraph(QGLWidget):
                        (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
 
     def paintGL(self):
-        #return
 
         t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
@@ -31,91 +27,82 @@ class ServosPosGraph(QGLWidget):
         glVertex3f(t, 0, 0)
         glVertex3f(t, 256, 0)
         glEnd()
-        glPointSize(5)
+        glPointSize(6)
         glBegin(GL_POINTS)
         ani = self.servoAdjustment.animation
 
+        closest = self.servoAdjustment.getClosestKey()
+        closestPair = self.servoAdjustment.getCurrKeyPair()
+
         for i,c in list(zip(ani, range(1, 1+len(ani)))):
-            # Colors are wrong here
-            glColor3f(self.colors[c][0], self.colors[c][1], self.colors[c][2])
+            #@TODO Colors are wrong here
+            # if i == closest: glPointSize(10)
+            # else: glPointSize(4)
+
+            #if i != closestPair[0] and i != closestPair[1]: glColor3f(self.colors[c][0]/10, self.colors[c][1]/10, self.colors[c][2]/10)
+            if i != closest:
+                glColor3f(self.colors[c][0] / 10, self.colors[c][1] / 10, self.colors[c][2] / 10)
+            else: glColor3f(1,1,1)
 
             for t in ani[i]: glVertex2d(i,t)
         glEnd()
 
         keys = list(ani.keys())
         values = list(ani.values())
-        # l = ([(x, y) for (x, y) in sorted(zip(keys, values))])
-        #s = sorted(zip(keys, values, list(range(len(keys)))))
         s = sorted(zip(keys, values))
         l = []
         for p in list(s)[0][1]: l += [[]]
         for (t, y) in s:
-            #print('t,y', t, y)
-            #for v in y: print('      v',v)
-            for i in range(len(y)):
-                l[i] += [y[i]]
-                #print('w',y[i])
-                pass
-            pass
-        #print('l', l)
+            for i in range(len(y)): l[i] += [y[i]]
 
         keys.sort()
 
-        for i in l:
-            #print('keys', 'i', keys, i)
-            #splrep(np.array(keys), np.array(i))
-            a = np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int)
-            b = np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int)
-            #print('a.shape', a.shape)
-            #print('b.shape', b.shape)
-            #try: print('www', splrep(a,b))
-            #print('a',a)
-            #except: pass
-            #print('a',type(a))
-            s = splrep(a, b)
-            #print('s',s)
-            x2 = np.linspace(0, 256, 256)
-            #print('x2',x2)
-            y2 = splev(x2, s)
-            #
-            glBegin(GL_LINE_STRIP)
-            #print('qqq', [int(i) for i in y2])
-            for i in range(len(y2)):
-                glVertex2f(x2[i], y2[i])
-            glEnd()
+        if True:
+            glColor4f(1,1,1,1)
+            for i in l:
 
+                try: s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
 
-        for j in range(len(self.servoAdjustment.animation[0])):
+                except: continue # @TODO need to make fall back to linear interpolation
+                x2 = np.linspace(0, 256, 256)
+                y2 = splev(x2, s)
+                glBegin(GL_LINE_STRIP)
+                for i in range(len(y2)): glVertex2f(x2[i], y2[i])
+                glEnd()
 
-            """Change line width depending on current joint being edited"""
-            if j == self.servoAdjustment.currBeingEdited: glLineWidth(4)
-            else:                                         glLineWidth(1)
+        else:
+            for j in range(len(self.servoAdjustment.animation[0])):
 
-            glColor3f(self.colors[j][0], self.colors[j][1], self.colors[j][2])
-            glBegin(GL_LINE_STRIP)
+                """Change line width depending on current joint being edited"""
+                if j == self.servoAdjustment.currBeingEdited: glLineWidth(4)
+                else:                                         glLineWidth(1)
 
-            r = list(range(0,256,16)) + list(ani.keys())
-            r.sort()
-            for i in r:
-                keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
-                if keyPair is None: continue
-                A = ani[keyPair[0]]
-                B = ani[keyPair[1]]
-                intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
-                #glVertex2d(i, intp(i))
+                glColor3f(self.colors[j][0], self.colors[j][1], self.colors[j][2])
+                glBegin(GL_LINE_STRIP)
 
-            """
-            r = list(ani.keys())
-            r.sort()
-            for i in r:
-                keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
-                if keyPair is None: continue
-                A = ani[keyPair[0]]
-                B = ani[keyPair[1]]
-                intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
-                glVertex2d(i, intp(i))
-            """
-            glEnd()
+                r = list(range(0,256,16)) + list(ani.keys())
+                r.sort()
+                for i in r:
+                    keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
+                    if keyPair is None: continue
+                    A = ani[keyPair[0]]
+                    B = ani[keyPair[1]]
+                    intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
+                    #glVertex2d(i, intp(i))
+
+                """
+                r = list(ani.keys())
+                r.sort()
+                for i in r:
+                    keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
+                    if keyPair is None: continue
+                    A = ani[keyPair[0]]
+                    B = ani[keyPair[1]]
+                    intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
+                    glVertex2d(i, intp(i))
+                """
+                glEnd()
 
 
     def resizeGL(self, w, h):

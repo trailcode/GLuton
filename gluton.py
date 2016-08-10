@@ -25,6 +25,7 @@ def _str(s): return str.encode(str(s));
 import operator
 
 def get_truth(inp, relate, cut):
+    print('lista',inp,relate,cut)
     ops = {'>': operator.gt,
            '<': operator.lt,
            '>=': operator.ge,
@@ -117,19 +118,25 @@ class ServoAdjustment(QMainWindow):
                 self.ui.horizontalLayoutTime.addLayout(box)
 
         self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+
+        self.animations = [{0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
+
+                           {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
+                            18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            165: [113, 101, 71, 126, 34, 126, 126, 126, 126, 126, 126, 126],
+                            151: [153, 106, 124, 106, 0, 106, 106, 106, 106, 106, 106, 106],
+                            177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89],
+                            76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+                           ]
+
+
+        self.animation = self.animations[1]
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
-        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
-                          18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          165: [113, 101, 71, 126, 34, 126, 126, 126, 126, 126, 126, 126],
-                          151: [153, 106, 124, 106, 0, 106, 106, 106, 106, 106, 106, 106],
-                          177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89],
-                          76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -137,6 +144,7 @@ class ServoAdjustment(QMainWindow):
         self.ui.horizontalSliderPos.valueChanged.connect(self.posChanged)
         self.ui.pushButtonDumpValues.clicked.connect(self.dumpValues)
         self.ui.pushButtonZeroPos.clicked.connect(lambda : self.ui.horizontalSliderPos.setValue(1024))
+        self.ui.pushButtonDeleteKey.clicked.connect(self.deleteCurrKey)
         #self.ui.spinBoxPose.valueChanged.connect(self.poseChanged)
 
         for i in range(len(self.mins)): self.servoChanged(i)
@@ -156,11 +164,14 @@ class ServoAdjustment(QMainWindow):
         self.ui.pushButtonReset.clicked.connect(reset)
 
         self.ui.pushButtonPrevKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair()[0]))
-        self.ui.pushButtonNextKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair('>')[1]))
+        self.ui.pushButtonNextKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair(cmp='>')[1]))
 
         self.inTime = False
 
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
+
+    def deleteCurrKey(self):
+        print('curr key', self.getClosestKey())
 
     def center(self):
         frameGm = self.frameGeometry()
@@ -172,12 +183,19 @@ class ServoAdjustment(QMainWindow):
     def ensureAnimation(self):
         pass
 
-    def getCurrKeyPair(self, cmp = '>=', value=None):
+    def getCurrKeyPair(self, value=None, cmp = '>='):
         if value is None: value = self.timeSlider.value()
         keys = list(self.animation.keys())
-        keys.sort()
+        keys.sort() #@TODO store keys in self already sorted!
         for i in range(len(keys)):
             if get_truth(keys[i], cmp, value): return (keys[i - 1], keys[i])
+
+    def getClosestKey(self, value=None, cmp = '>='):
+        if value is None: value = self.timeSlider.value()
+        pair = self.getCurrKeyPair(value=value)
+        #print('value - pair[0]', value - pair[0], 'pair[1]', value - pair[1])
+        if value - pair[0] < pair[1] - value: return pair[0]
+        return pair[1]
 
     def servoSliderChanged(self, index, value):
         t = self.timeSlider.value()
@@ -210,11 +228,6 @@ class ServoAdjustment(QMainWindow):
         self.canvas.paintGL()
         self.canvas.swapBuffers()
         self.canvas.repaint()
-
-
-
-    def poseChanged(self, value):
-        print('poseChanged', value)
 
     def minChanged(self, value):
         self.ui.labelMin.setText('Min: ' + str(value))
