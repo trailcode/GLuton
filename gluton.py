@@ -40,12 +40,9 @@ class ServoAdjustment(QMainWindow):
         super(ServoAdjustment, self).__init__()
         self.ui = uic.loadUi("gluton.ui", self)
         self.ui.show()
-        #self.ui.sliderWidget.setStyleSheet("background-image: url(logo.png);background-attachment: fixed")
-            #setPixmap(QPixmap(os.getcwd() + "/logo.png"))
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
         self.sliders = []
         self.canvas = ServosPosGraph(self)
-        #self.canvas.setSizePolicy(QSizePolicy.Policy.
         self.ui.canvasLayout.addWidget(self.canvas)
 
         self.background_pixmap = QPixmap('logo.png')
@@ -55,7 +52,6 @@ class ServoAdjustment(QMainWindow):
         self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                       'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
-        #self.names = ['Left Ankle', 'Left Knee', 'time']
         self.servoValueSliders = []
         self.servoValueLabels = []
         self.center()
@@ -81,7 +77,6 @@ class ServoAdjustment(QMainWindow):
                     self.servoAdjustment.canvas.repaint()
                     #self.setStyleSheet("background-color:#45b545;")
 
-            #slider = QSlider(Qt.Horizontal)
             slider = MySlider(index, self, Qt.Horizontal)
             slider.setMaximum(256)
             self.sliders += [slider]
@@ -98,11 +93,6 @@ class ServoAdjustment(QMainWindow):
             label.setMaximumHeight(15)
             slider.setMaximumHeight(15)
             valueLabel.setMaximumHeight(15)
-            """
-            label.setContentsMargins(0, 0, 0, 0)
-            slider.setContentsMargins(0, 0, 0, 0)
-            valueLabel.setContentsMargins(0, 0, 0, 0)
-            """
             box.addWidget(slider)
             box.addWidget(valueLabel)
             box.setContentsMargins(0,0,0,0)
@@ -145,7 +135,6 @@ class ServoAdjustment(QMainWindow):
         self.ui.pushButtonDumpValues.clicked.connect(self.dumpValues)
         self.ui.pushButtonZeroPos.clicked.connect(lambda : self.ui.horizontalSliderPos.setValue(1024))
         self.ui.pushButtonDeleteKey.clicked.connect(self.deleteCurrKey)
-        #self.ui.spinBoxPose.valueChanged.connect(self.poseChanged)
 
         for i in range(len(self.mins)): self.servoChanged(i)
 
@@ -171,7 +160,10 @@ class ServoAdjustment(QMainWindow):
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
 
     def deleteCurrKey(self):
-        print('curr key', self.getClosestKey())
+        self.animation.pop(self.getClosestKey())
+        self.canvas.paintGL()
+        self.canvas.swapBuffers()
+        self.canvas.repaint()
 
     def center(self):
         frameGm = self.frameGeometry()
