@@ -5,7 +5,7 @@ from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
-from scipy.interpolate import splrep
+from scipy.interpolate import splrep, splev
 import numpy as np
 
 class ServosPosGraph(QGLWidget):
@@ -42,6 +42,49 @@ class ServosPosGraph(QGLWidget):
             for t in ani[i]: glVertex2d(i,t)
         glEnd()
 
+        keys = list(ani.keys())
+        values = list(ani.values())
+        # l = ([(x, y) for (x, y) in sorted(zip(keys, values))])
+        #s = sorted(zip(keys, values, list(range(len(keys)))))
+        s = sorted(zip(keys, values))
+        l = []
+        for p in list(s)[0][1]: l += [[]]
+        for (t, y) in s:
+            #print('t,y', t, y)
+            #for v in y: print('      v',v)
+            for i in range(len(y)):
+                l[i] += [y[i]]
+                #print('w',y[i])
+                pass
+            pass
+        #print('l', l)
+
+        keys.sort()
+
+        for i in l:
+            #print('keys', 'i', keys, i)
+            #splrep(np.array(keys), np.array(i))
+            a = np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int)
+            b = np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int)
+            #print('a.shape', a.shape)
+            #print('b.shape', b.shape)
+            #try: print('www', splrep(a,b))
+            #print('a',a)
+            #except: pass
+            #print('a',type(a))
+            s = splrep(a, b)
+            #print('s',s)
+            x2 = np.linspace(0, 256, 256)
+            #print('x2',x2)
+            y2 = splev(x2, s)
+            #
+            glBegin(GL_LINE_STRIP)
+            #print('qqq', [int(i) for i in y2])
+            for i in range(len(y2)):
+                glVertex2f(x2[i], y2[i])
+            glEnd()
+
+
         for j in range(len(self.servoAdjustment.animation[0])):
 
             """Change line width depending on current joint being edited"""
@@ -53,26 +96,13 @@ class ServosPosGraph(QGLWidget):
 
             r = list(range(0,256,16)) + list(ani.keys())
             r.sort()
-            keys = list(ani.keys())
-            values = list(ani.values())
-            #l = ([(x, y) for (x, y) in sorted(zip(keys, values))])
-            for (x, y) in sorted(zip(keys, values)):
-                print('x,y',x,y)
-
-            #print('aaaa',l)
-            #l = sorted(zip(keys, values))
-
-            print('keys', keys)
             for i in r:
                 keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
                 if keyPair is None: continue
                 A = ani[keyPair[0]]
                 B = ani[keyPair[1]]
-                # print('keyPair[0]', keyPair[0], A[j])
-                #print('int',(keyPair[0], keyPair[1]), (A[j], B[j]))
                 intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
-                #intp = splrep()
-                glVertex2d(i, intp(i))
+                #glVertex2d(i, intp(i))
 
             """
             r = list(ani.keys())
