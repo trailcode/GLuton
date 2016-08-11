@@ -11,6 +11,16 @@ from scipy.interpolate import interp1d
 from itertools import product
 from ServosPosGraph import ServosPosGraph
 from ConsoleWidget import ConsoleWidget
+from spyderlib.widgets import internalshell
+
+#from projexui.widgets.xconsoleedit import XConsoleEdit
+
+#from python_qt_binding.QtGui import QFont
+from PyQt4.QtGui import QFont
+
+from spyderlib.widgets.internalshell import InternalShell
+from spyderlib.utils.module_completion import module_completion
+
 import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
@@ -20,6 +30,30 @@ s = None
 try: s = serial.Serial(port='/dev/cu.wchusbserial1420', baudrate=115200)
 except: pass
 """
+
+
+class SpyderConsoleWidget(InternalShell):
+    def __init__(self, context=None):
+        my_locals = {
+            'context': context
+        }
+        super(SpyderConsoleWidget, self).__init__(namespace=my_locals)
+        self.setObjectName('SpyderConsoleWidget')
+        self.set_pythonshell_font(QFont('Mono'))
+        self.interpreter.restore_stds()
+
+    def get_module_completion(self, objtxt):
+        """Return module completion list associated to object name"""
+        return module_completion(objtxt)
+
+    def run_command(self, *args):
+        self.interpreter.redirect_stds()
+        super(SpyderConsoleWidget, self).run_command(*args)
+        self.flush()
+        self.interpreter.restore_stds()
+
+    def shutdown(self):
+        self.exit_interpreter()
 
 def _str(s): return str.encode(str(s));
 
@@ -32,8 +66,6 @@ def get_truth(inp, relate, cut):
            '<=': operator.le,
            '=': operator.eq}
     return ops[relate](inp, cut)
-
-
 
 class ServoAdjustment(QMainWindow):
     def __init__(self):
@@ -159,9 +191,17 @@ class ServoAdjustment(QMainWindow):
 
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
 
-        self.consoleVariables = {"canvas": self.canvas, "animation": self.animation}
-        self.console = ConsoleWidget(self, self.consoleVariables)
-        self.ui.consoleLayout.addWidget(self.console)
+        # self.consoleVariables = {"canvas": self.canvas, "animation": self.animation}
+        # self.console = ConsoleWidget(self, self.consoleVariables)
+        # self.ui.consoleLayout.addWidget(self.console)
+
+        global gui
+        gui = self
+        #dock = QDockWidget("Python Shell")
+        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False)
+        #dock.setWidget(self.pythonshell)
+        #self.ui.addDockWidget(Qt.BottomDockWidgetArea, dock)
+        self.ui.consoleLayout.addWidget(self.pythonshell)
 
     def deleteCurrKey(self):
         self.animation.pop(self.getClosestKey())
