@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1677</width>
-    <height>1000</height>
+    <width>1106</width>
+    <height>776</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,236 +18,6 @@
     <bool>true</bool>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QWidget" name="widget" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>24</height>
-         </size>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <property name="margin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>24</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Servo:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="spinBoxServo">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>24</height>
-            </size>
-           </property>
-           <property name="maximum">
-            <number>15</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelServoName">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>24</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Servo Name</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
-      <item>
-       <widget class="QLabel" name="labelMin">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Min: 500</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="horizontalSliderMin">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="maximum">
-         <number>700</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QLabel" name="labelMax">
-        <property name="text">
-         <string>Max: 500</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="horizontalSliderMax">
-        <property name="maximum">
-         <number>700</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QLabel" name="labelOffset">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>15</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Offset: 0.0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="horizontalSliderOffset">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16</height>
-         </size>
-        </property>
-        <property name="maximum">
-         <number>2048</number>
-        </property>
-        <property name="value">
-         <number>1024</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QLabel" name="labelPos">
-        <property name="text">
-         <string>Pos: 0.0</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="horizontalSliderPos">
-        <property name="maximum">
-         <number>2048</number>
-        </property>
-        <property name="value">
-         <number>1024</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_8">
       <item alignment="Qt::AlignHCenter">
@@ -410,32 +180,23 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="horizontalLayoutTime"/>
-    </item>
-    <item>
-     <widget class="QSplitter" name="splitter_2">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="QWidget" name="layoutWidget">
-        <layout class="QHBoxLayout" name="canvasLayout">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetMinAndMaxSize</enum>
+     <layout class="QVBoxLayout" name="horizontalLayoutTime">
+      <item>
+       <widget class="QSplitter" name="splitter_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <widget class="QSplitter" name="splitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-        </layout>
+         <widget class="QWidget" name="layoutWidget_2">
+          <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
+         </widget>
+        </widget>
        </widget>
-       <widget class="QWidget" name="layoutWidget_2">
-        <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="verticalLayoutWidget_2">
-       <layout class="QVBoxLayout" name="consoleLayout"/>
-      </widget>
-     </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -444,12 +205,279 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1677</width>
+     <width>1106</width>
      <height>22</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <layout class="QHBoxLayout" name="canvasLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinAndMaxSize</enum>
+       </property>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>24</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Servo:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBoxServo">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="maximum">
+             <number>15</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelServoName">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Servo Name</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+       <item>
+        <widget class="QLabel" name="labelMin">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Min: 500</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSliderMin">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="maximum">
+          <number>700</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="labelMax">
+         <property name="text">
+          <string>Max: 500</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSliderMax">
+         <property name="maximum">
+          <number>700</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="labelOffset">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Offset: 0.0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSliderOffset">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16</height>
+          </size>
+         </property>
+         <property name="maximum">
+          <number>2048</number>
+         </property>
+         <property name="value">
+          <number>1024</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="labelPos">
+         <property name="text">
+          <string>Pos: 0.0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="horizontalSliderPos">
+         <property name="maximum">
+          <number>2048</number>
+         </property>
+         <property name="value">
+          <number>1024</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_4">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item>
+      <layout class="QVBoxLayout" name="consoleLayout"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
  </widget>
  <resources/>
  <connections/>
