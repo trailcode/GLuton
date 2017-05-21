@@ -15,7 +15,7 @@ from ConsoleWidget import ConsoleWidget
 from SpyderConsoleWidget import SpyderConsoleWidget
 from spyderlib.widgets import internalshell
 import numpy as np
-
+from guiUtils import guirestore, guisave
 #from projexui.widgets.xconsoleedit import XConsoleEdit
 
 #from python_qt_binding.QtGui import QFont
@@ -192,6 +192,56 @@ class ServoAdjustment(QMainWindow):
         gui = self
         self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
         self.ui.consoleLayout.addWidget(self.pythonshell)
+
+        """
+        file = open('perspective', 'r')
+        self.state = file.read()
+        print(self.state)
+        print('ret', self.restoreState(QByteArray(self.state)))
+        file.close()
+        """
+        try:
+            #dasd
+            UI_VERSION = 1
+            programname = os.path.basename(__file__)
+            programbase, ext = os.path.splitext(programname)
+
+            print(programbase)
+
+            settings = QSettings("company", programbase)  # http://pyqt.sourceforge.net/Docs/PyQt4/pyqt_qsettings.html
+
+            #self.restoreGeometry(settings.value("geometryMain"))
+            self.ui.restoreGeometry(settings.value("geometry"))
+            self.ui.restoreState(settings.value("state"), UI_VERSION)
+
+
+        except: pass
+
+        print(self.geometry())
+
+
+
+        #self.showMaximized()
+
+
+    def closeEvent(self, event):
+        """
+        file = QFile('perspective')
+        file.open(QIODevice.WriteOnly)
+        file.write(self.saveState())
+        file.close()
+        """
+        UI_VERSION = 1  # increment this whenever the UI changes significantly
+
+        programname = os.path.basename(__file__)
+        programbase, ext = os.path.splitext(programname)  # extract basename and ext from filename
+        settings = QSettings("company", programbase)
+        #settings.setValue("geometryMain", self.saveGeometry())  # save window geometry
+        settings.setValue("geometry", self.ui.saveGeometry())  # save window geometry
+        settings.setValue("state", self.ui.saveState(UI_VERSION))  # save settings (UI_VERSION is a constant you should increment when your UI changes significantly to prevent attempts to restore an invalid state.)
+        #settings.setValue("mainWinGeom", self.get)
+
+
 
     def deleteCurrKey(self):
         self.animation.pop(self.getClosestKey())

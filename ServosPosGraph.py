@@ -34,7 +34,7 @@ class ServosPosGraph(QGLWidget):
         ani = self.servoAdjustment.animation
 
         closest = self.servoAdjustment.getClosestKey()
-        
+
         glColor3f(1, 1, 1)
 
         for i,c in list(zip(ani, range(1, 1+len(ani)))):
