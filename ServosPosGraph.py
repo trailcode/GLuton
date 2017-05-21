@@ -52,15 +52,35 @@ class ServosPosGraph(QGLWidget):
 
         keys, values = self.servoAdjustment.getOrderedKeysValues()
 
-        if True:
-        #if False:
-            glColor4f(1,1,1,1)
+        def setColorAndLineWidth(index):
+            """Change line width depending on current joint being edited"""
+            if index == self.servoAdjustment.currBeingEdited:   glLineWidth(4)
+            else:                                               glLineWidth(1)
+
+            glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
+
+        def do1D_Interpolation(index):
+            setColorAndLineWidth(index)
+
+            glBegin(GL_LINE_STRIP)
+
+            r = list(range(0, 256, 16)) + list(ani.keys())
+            r.sort()
+            for i in r:
+                keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
+                if keyPair is None: continue
+                A = ani[keyPair[0]]
+                B = ani[keyPair[1]]
+                intp = interp1d((keyPair[0], keyPair[1]), (A[index], B[index]))
+                glVertex2d(i, intp(i))
+
+            glEnd()
+
+        if self.servoAdjustment.interpolationMode == 0:
             index = 0
             for i in values:
-                if index == self.servoAdjustment.currBeingEdited:   glLineWidth(4)
-                else:                                               glLineWidth(1)
-                glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
-                index += 1
+                setColorAndLineWidth(index)
+
                 try:
                     s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                 np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
@@ -70,30 +90,12 @@ class ServosPosGraph(QGLWidget):
                     for i in range(len(y2)): glVertex2f(x2[i], y2[i])
                     glEnd()
 
-                except: continue # @TODO need to make fall back to linear interpolation
+                except: do1D_Interpolation(index)
+                index += 1
         else:
         #if True:
-            for j in range(len(self.servoAdjustment.animation[0])):
+            for j in range(len(self.servoAdjustment.animation[0])): do1D_Interpolation(j)
 
-                """Change line width depending on current joint being edited"""
-                #print('j',j,self.servoAdjustment.currBeingEdited)
-                if j == self.servoAdjustment.currBeingEdited: glLineWidth(4)
-                else:                                         glLineWidth(1)
-
-                glColor3f(self.colors[j][0], self.colors[j][1], self.colors[j][2])
-                glBegin(GL_LINE_STRIP)
-
-                r = list(range(0,256,16)) + list(ani.keys())
-                r.sort()
-                for i in r:
-                    keyPair = self.servoAdjustment.getCurrKeyPair(value=i)
-                    if keyPair is None: continue
-                    A = ani[keyPair[0]]
-                    B = ani[keyPair[1]]
-                    intp = interp1d((keyPair[0], keyPair[1]), (A[j], B[j]))
-                    glVertex2d(i, intp(i))
-
-                glEnd()
         glLineWidth(1)
 
 

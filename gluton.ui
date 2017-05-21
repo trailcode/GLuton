@@ -57,6 +57,9 @@
        </widget>
       </item>
       <item>
+       <widget class="QComboBox" name="interpolationComboBox"/>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButtonPrevKey">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">

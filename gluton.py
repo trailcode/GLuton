@@ -64,6 +64,13 @@ class ServoAdjustment(QMainWindow):
         self.servoValueLabels = []
         self.center()
 
+        self.interpolationMode = 0
+        self.ui.interpolationComboBox.addItems(['B-Spline', '1D'])
+
+        def setMode(mode): self.interpolationMode = mode
+
+        self.ui.interpolationComboBox.activated.connect(setMode)
+
         for i,index in zip(self.names, range(0, len(self.names))):
             exec('ServoAdjustment.f' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
             label = QLabel()
@@ -117,6 +124,7 @@ class ServoAdjustment(QMainWindow):
 
         self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
+        """
         self.animations = [{0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
 
                            {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -135,6 +143,15 @@ class ServoAdjustment(QMainWindow):
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
+        """
+
+        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
+        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
+        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
+                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
+        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
+                          177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -201,12 +218,14 @@ class ServoAdjustment(QMainWindow):
     def getClosestKey(self, value=None, cmp = '>='):
         if value is None: value = self.timeSlider.value()
         pair = self.getCurrKeyPair(value=value)
+        if pair is None: return None
         if value - pair[0] < pair[1] - value: return pair[0]
         return pair[1]
 
     def getOrderedKeysValues(self):
         # """ Code duplication, also in ServosPosGraph
         keys = list(self.animation.keys())
+        if keys == []: return (None, None)
         values = list(self.animation.values())
         s = sorted(zip(keys, values))
         valuesOrdered = []
@@ -220,7 +239,7 @@ class ServoAdjustment(QMainWindow):
         t = self.timeSlider.value()
 
         if index == self.names.index('time'):
-            
+
             self.timeLabel.setText(str(value))
 
             self.ui.labelKey.setText('Key: ' + str(self.getCurrKeyPair(justIndex = True)))
@@ -233,21 +252,25 @@ class ServoAdjustment(QMainWindow):
 
             keys, values = self.getOrderedKeysValues()
 
-            for i in range(len(A)):
-                #"""
-                try:
-                    s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                               np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
+            if self.interpolationMode == 0:
 
-                    self.servoValueSliders[i].setValue(splev(t, s))
-                except:
-                    pass
-                #"""
+                for i in range(len(A)):
 
-                """
-                intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                self.servoValueSliders[i].setValue(intp(t))
-                """
+                    try:
+                        s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                   np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
+
+                        self.servoValueSliders[i].setValue(splev(t, s))
+
+                    except:
+
+                        intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                        self.servoValueSliders[i].setValue(intp(t))
+            else:
+                for i in range(len(A)):
+                    intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                    self.servoValueSliders[i].setValue(intp(t))
+
             self.inTime = False
 
         else:
