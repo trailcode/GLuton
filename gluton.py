@@ -202,6 +202,18 @@ class ServoAdjustment(QMainWindow):
         if value - pair[0] < pair[1] - value: return pair[0]
         return pair[1]
 
+    def getOrderedKeysValues(self):
+        # """ Code duplication, also in ServosPosGraph
+        keys = list(self.animation.keys())
+        values = list(self.animation.values())
+        s = sorted(zip(keys, values))
+        valuesOrdered = []
+        for p in list(s)[0][1]: valuesOrdered += [[]]
+        for (t, y) in s:
+            for i in range(len(y)): valuesOrdered[i] += [y[i]]
+        keys.sort()
+        return (keys, valuesOrdered)
+
     def servoSliderChanged(self, index, value):
         t = self.timeSlider.value()
 
@@ -214,23 +226,13 @@ class ServoAdjustment(QMainWindow):
             A = self.animation[keyPair[0]]
             B = self.animation[keyPair[1]]
 
-            #""" Code duplication, also in ServosPosGraph
-            keys = list(self.animation.keys())
-            values = list(self.animation.values())
-
-            s = sorted(zip(keys, values))
-            l = []
-            for p in list(s)[0][1]: l += [[]]
-            for (tt, y) in s:
-                for i in range(len(y)): l[i] += [y[i]]
-            keys.sort()
-            #"""
+            keys, values = self.getOrderedKeysValues()
 
             for i in range(len(A)):
                 #"""
                 try:
                     s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                               np.ndarray(shape=(len(keys),), buffer=np.array(l[i]), dtype=int))
+                               np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
 
                     self.servoValueSliders[i].setValue(splev(t, s))
                 except:

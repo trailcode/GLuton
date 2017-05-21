@@ -50,21 +50,13 @@ class ServosPosGraph(QGLWidget):
             for t in ani[i]: glVertex2d(i,t)
         glEnd()
 
-        keys = list(ani.keys())
-        values = list(ani.values())
-        s = sorted(zip(keys, values))
-        l = []
-        for p in list(s)[0][1]: l += [[]]
-        for (t, y) in s:
-            for i in range(len(y)): l[i] += [y[i]]
-
-        keys.sort()
+        keys, values = self.servoAdjustment.getOrderedKeysValues()
 
         if True:
         #if False:
             glColor4f(1,1,1,1)
             index = 0
-            for i in l:
+            for i in values:
                 if index == self.servoAdjustment.currBeingEdited:   glLineWidth(4)
                 else:                                               glLineWidth(1)
                 glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
