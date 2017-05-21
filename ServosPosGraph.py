@@ -30,12 +30,12 @@ class ServosPosGraph(QGLWidget):
         glVertex3f(t, 0, 0)
         glVertex3f(t, 256, 0)
         glEnd()
-        glPointSize(6)
-        glBegin(GL_POINTS)
+
         ani = self.servoAdjustment.animation
 
         closest = self.servoAdjustment.getClosestKey()
-        closestPair = self.servoAdjustment.getCurrKeyPair()
+        
+        glColor3f(1, 1, 1)
 
         for i,c in list(zip(ani, range(1, 1+len(ani)))):
             #@TODO Colors are wrong here
@@ -43,12 +43,18 @@ class ServosPosGraph(QGLWidget):
             # else: glPointSize(4)
 
             #if i != closestPair[0] and i != closestPair[1]: glColor3f(self.colors[c][0]/10, self.colors[c][1]/10, self.colors[c][2]/10)
+            """
             if i != closest:
                 glColor3f(self.colors[c][0] / 10, self.colors[c][1] / 10, self.colors[c][2] / 10)
             else: glColor3f(1,1,1)
+            """
 
+            if i != closest:    glPointSize(3)
+            else:               glPointSize(6)
+
+            glBegin(GL_POINTS)
             for t in ani[i]: glVertex2d(i,t)
-        glEnd()
+            glEnd()
 
         keys, values = self.servoAdjustment.getOrderedKeysValues()
 
