@@ -214,7 +214,7 @@ class ServoAdjustment(QMainWindow):
             A = self.animation[keyPair[0]]
             B = self.animation[keyPair[1]]
 
-            #"""
+            #""" Code duplication, also in ServosPosGraph
             keys = list(self.animation.keys())
             values = list(self.animation.values())
 
@@ -226,17 +226,12 @@ class ServoAdjustment(QMainWindow):
             keys.sort()
             #"""
 
-            #print('l', l)
-            #print('len(A)', len(A))
-
             for i in range(len(A)):
                 #"""
                 try:
                     s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                np.ndarray(shape=(len(keys),), buffer=np.array(l[i]), dtype=int))
 
-                    #print('s',s)
-                    #print(splev(t, s))
                     self.servoValueSliders[i].setValue(splev(t, s))
                 except:
                     pass

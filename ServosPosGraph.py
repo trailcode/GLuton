@@ -63,8 +63,12 @@ class ServosPosGraph(QGLWidget):
         if True:
         #if False:
             glColor4f(1,1,1,1)
+            index = 0
             for i in l:
-
+                if index == self.servoAdjustment.currBeingEdited:   glLineWidth(4)
+                else:                                               glLineWidth(1)
+                glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
+                index += 1
                 try:
                     s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                 np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
@@ -98,7 +102,7 @@ class ServosPosGraph(QGLWidget):
                     glVertex2d(i, intp(i))
 
                 glEnd()
-            glLineWidth(1)
+        glLineWidth(1)
 
 
     def resizeGL(self, w, h):
