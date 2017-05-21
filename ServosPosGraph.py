@@ -17,6 +17,7 @@ class ServosPosGraph(QGLWidget):
         self.servoAdjustment = servoAdjustment
         self.colors = [(70,128,50),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
                        (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
+        self.setMouseTracking(True)
 
     def paintGL(self):
 
@@ -60,21 +61,22 @@ class ServosPosGraph(QGLWidget):
         keys.sort()
 
         if True:
+        #if False:
             glColor4f(1,1,1,1)
             for i in l:
 
-                try: s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                try:
+                    s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                 np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
+                    x2 = np.linspace(0, 256, 256)
+                    y2 = splev(x2, s)
+                    glBegin(GL_LINE_STRIP)
+                    for i in range(len(y2)): glVertex2f(x2[i], y2[i])
+                    glEnd()
 
                 except: continue # @TODO need to make fall back to linear interpolation
-                x2 = np.linspace(0, 256, 256)
-                y2 = splev(x2, s)
-                glBegin(GL_LINE_STRIP)
-                for i in range(len(y2)): glVertex2f(x2[i], y2[i])
-                glEnd()
-
-        #else:
-        if True:
+        else:
+        #if True:
             for j in range(len(self.servoAdjustment.animation[0])):
 
                 """Change line width depending on current joint being edited"""
@@ -109,3 +111,19 @@ class ServosPosGraph(QGLWidget):
     def initializeGL(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
+
+    def setMouseTracking(self, flag):
+        def recursive_set(parent):
+            for child in parent.findChildren(QObject):
+                try:
+                    child.setMouseTracking(flag)
+                except:
+                    pass
+                recursive_set(child)
+
+        QWidget.setMouseTracking(self, flag)
+        recursive_set(self)
+
+    def mouseMoveEvent(self, event):
+        #print('mouseMoveEvent: x=%d, y=%d' % (event.x(), event.y()))
+        pass

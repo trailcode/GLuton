@@ -173,10 +173,7 @@ class ServoAdjustment(QMainWindow):
 
         global gui
         gui = self
-        #dock = QDockWidget("Python Shell")
-        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False)
-        #dock.setWidget(self.pythonshell)
-        #self.ui.addDockWidget(Qt.BottomDockWidgetArea, dock)
+        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
         self.ui.consoleLayout.addWidget(self.pythonshell)
 
     def deleteCurrKey(self):
@@ -209,15 +206,46 @@ class ServoAdjustment(QMainWindow):
         t = self.timeSlider.value()
 
         if index == self.names.index('time'):
+            #print('value',value)
             self.timeLabel.setText(str(value))
             keyPair = self.getCurrKeyPair()
             if keyPair is None: return
             self.inTime = True
             A = self.animation[keyPair[0]]
             B = self.animation[keyPair[1]]
+
+            #"""
+            keys = list(self.animation.keys())
+            values = list(self.animation.values())
+
+            s = sorted(zip(keys, values))
+            l = []
+            for p in list(s)[0][1]: l += [[]]
+            for (tt, y) in s:
+                for i in range(len(y)): l[i] += [y[i]]
+            keys.sort()
+            #"""
+
+            #print('l', l)
+            #print('len(A)', len(A))
+
             for i in range(len(A)):
+                #"""
+                try:
+                    s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                               np.ndarray(shape=(len(keys),), buffer=np.array(l[i]), dtype=int))
+
+                    #print('s',s)
+                    #print(splev(t, s))
+                    self.servoValueSliders[i].setValue(splev(t, s))
+                except:
+                    pass
+                #"""
+
+                """
                 intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
                 self.servoValueSliders[i].setValue(intp(t))
+                """
             self.inTime = False
 
         else:
