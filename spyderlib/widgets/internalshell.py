@@ -217,6 +217,7 @@ class InternalShell(PythonShellWidget):
         data = self.interpreter.stdout_write.empty_queue()
         if data:
             self.write(data)
+
         
     def stderr_avail(self):
         """Data is available in stderr, let's empty the queue and write it!"""

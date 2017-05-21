@@ -1,5 +1,7 @@
+
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
+from PyQt4.QtCore import QObject
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev
