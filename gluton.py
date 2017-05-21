@@ -189,12 +189,14 @@ class ServoAdjustment(QMainWindow):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    def getCurrKeyPair(self, value=None, cmp = '>='):
+    def getCurrKeyPair(self, value=None, cmp = '>=', justIndex = False):
         if value is None: value = self.timeSlider.value()
         keys = list(self.animation.keys())
         keys.sort() #@TODO store keys in self already sorted!
         for i in range(len(keys)):
-            if get_truth(keys[i], cmp, value): return (keys[i - 1], keys[i])
+            if get_truth(keys[i], cmp, value):
+                if justIndex: return i
+                return (keys[i - 1], keys[i])
 
     def getClosestKey(self, value=None, cmp = '>='):
         if value is None: value = self.timeSlider.value()
@@ -218,8 +220,11 @@ class ServoAdjustment(QMainWindow):
         t = self.timeSlider.value()
 
         if index == self.names.index('time'):
-            #print('value',value)
+            
             self.timeLabel.setText(str(value))
+
+            self.ui.labelKey.setText('Key: ' + str(self.getCurrKeyPair(justIndex = True)))
+
             keyPair = self.getCurrKeyPair()
             if keyPair is None: return
             self.inTime = True
