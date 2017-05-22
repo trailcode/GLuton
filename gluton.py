@@ -48,12 +48,20 @@ class ServoAdjustment(QMainWindow):
         super(ServoAdjustment, self).__init__()
         self.ui = uic.loadUi("gluton.ui", self)
         self.ui.show()
+
+        self.setWindowTitle('Gluton')
+
         self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
         self.sliders = []
         self.canvas = ServosPosGraph(self)
         self.ui.canvasLayout.addWidget(self.canvas)
 
         self.background_pixmap = QPixmap('logo.png')
+
+        def saveFile():
+            print('Save')
+
+        self.ui.actionSave.triggered.connect(saveFile)
 
         self.currBeingEdited = 0
 
@@ -201,7 +209,7 @@ class ServoAdjustment(QMainWindow):
         file.close()
         """
         try:
-            #dasd
+            dasd
             UI_VERSION = 1
             programname = os.path.basename(__file__)
             programbase, ext = os.path.splitext(programname)
@@ -213,7 +221,7 @@ class ServoAdjustment(QMainWindow):
             #self.restoreGeometry(settings.value("geometryMain"))
             self.ui.restoreGeometry(settings.value("geometry"))
             self.ui.restoreState(settings.value("state"), UI_VERSION)
-
+            self.ui.keyValueGrapDockWidget.restoreGeometry(settings.value("keyValueGrapDockWidget"))
 
         except: pass
 
@@ -239,6 +247,7 @@ class ServoAdjustment(QMainWindow):
         #settings.setValue("geometryMain", self.saveGeometry())  # save window geometry
         settings.setValue("geometry", self.ui.saveGeometry())  # save window geometry
         settings.setValue("state", self.ui.saveState(UI_VERSION))  # save settings (UI_VERSION is a constant you should increment when your UI changes significantly to prevent attempts to restore an invalid state.)
+        settings.setValue("keyValueGrapDockWidget", self.ui.keyValueGrapDockWidget.saveGeometry())
         #settings.setValue("mainWinGeom", self.get)
 
 
