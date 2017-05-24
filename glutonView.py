@@ -1,5 +1,7 @@
 import math
 from math import cos, sin
+
+from OpenGL.raw.GLUT import glutSolidCube
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -60,8 +62,9 @@ class GlutonView(QGLWidget):
 
         glPushMatrix();  # // NEW: Prepare Dynamic Transform
         glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
-        glColor3f(0.75, 0.75, 1.0);
-        Torus(0.30, 1.00);
+        glColor3f(0, 0.75, 1.0);
+        #Torus(0.30, 1.00);
+        glutSolidCube(1,1)
         glPopMatrix();  # // NEW: Unapply Dynamic Transform
 
         glLoadIdentity();  # // Reset The Current Modelview Matrix
@@ -69,8 +72,9 @@ class GlutonView(QGLWidget):
 
         glPushMatrix();  # // NEW: Prepare Dynamic Transform
         glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
-        glColor3f(1.0, 0.75, 0.75);
+        glColor3f(1, 0.75, 0.75);
         gluSphere(self.quadratic, 1.3, 20, 20);
+        #glutSolidCube(1, 1)
         glPopMatrix();  # // NEW: Unapply Dynamic Transform
 
     def resizeGL(self, width, height):
@@ -122,7 +126,6 @@ class GlutonView(QGLWidget):
         recursive_set(self)
 
     def doRotate(self, x, y):
-        print(x,y)
         mouse_pt = Point2fT(x, y)
         ThisQuat = self.arcBall.drag(mouse_pt)  # // Update End Vector And Get Rotation As Quaternion
         self.thisRot = Matrix3fSetRotationFromQuat4f(ThisQuat)  # // Convert Quaternion Into Matrix3fT
@@ -130,6 +133,8 @@ class GlutonView(QGLWidget):
         self.thisRot = Matrix3fMulMatrix3f(self.lastRot, self.thisRot)  # // Accumulate Last Rotation Into This One
         self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
                                                          self.thisRot)  # // Set Our Final Transform's Rotation From This One
+        self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
+
     def mouseMoveEvent(self, event):
         #print('mouseMoveEvent: x=%d, y=%d' % (event.x(), event.y()))
 
@@ -156,6 +161,7 @@ class GlutonView(QGLWidget):
         This is used for zooming, or rather moving the camera ahead.
         """
         delta = event.delta()
+        if delta == 0: return
         btns = event.buttons()
         moda = event.modifiers()
         x = event.x()
