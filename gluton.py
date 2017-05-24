@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev
 from itertools import product
 from ServosPosGraph import ServosPosGraph
+from glutonView import GlutonView
 from ConsoleWidget import ConsoleWidget
 from SpyderConsoleWidget import SpyderConsoleWidget
 from spyderlib.widgets import internalshell
@@ -55,13 +56,18 @@ class ServoAdjustment(QMainWindow):
         self.sliders = []
         self.canvas = ServosPosGraph(self)
         self.ui.canvasLayout.addWidget(self.canvas)
+        self.glutonCanvas = GlutonView(self)
+        self.ui.glutonViewLayout.addWidget(self.glutonCanvas)
 
         self.background_pixmap = QPixmap('logo.png')
 
-        def saveFile():
-            print('Save')
+        def save():
+            print('  self.mins =', self.mins)
+            print('  self.maxs =', self.maxs)
+            print('  self.offsets =', self.offsets)
+            print('  self.animation =', self.animation)
 
-        self.ui.actionSave.triggered.connect(saveFile)
+        self.ui.actionSave.triggered.connect(save)
 
         self.currBeingEdited = 0
 
@@ -91,6 +97,7 @@ class ServoAdjustment(QMainWindow):
                     self.setMouseTracking(True)
                     self.number = index
                     self.servoAdjustment = servoAdjustment
+                    #self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
                 def enterEvent(self, event):
 
@@ -105,7 +112,8 @@ class ServoAdjustment(QMainWindow):
             self.sliders += [slider]
             valueLabel = QLabel()
             valueLabel.setText(str(slider.value()))
-            valueLabel.setFixedWidth(100)
+            valueLabel.setFixedWidth(25)
+            #valueLabel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
             global _self
             _self = self
@@ -165,25 +173,12 @@ class ServoAdjustment(QMainWindow):
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
         self.ui.horizontalSliderOffset.valueChanged.connect(self.offsetChanged)
         self.ui.horizontalSliderPos.valueChanged.connect(self.posChanged)
-        self.ui.pushButtonDumpValues.clicked.connect(self.dumpValues)
         self.ui.pushButtonZeroPos.clicked.connect(lambda : self.ui.horizontalSliderPos.setValue(1024))
         self.ui.pushButtonDeleteKey.clicked.connect(self.deleteCurrKey)
 
         for i in range(len(self.mins)): self.servoChanged(i)
 
         self.servoChanged(0)
-
-        def save():
-            print('  self.mins =', self.mins)
-            print('  self.maxs =', self.maxs)
-            print('  self.offsets =', self.offsets)
-            print('  self.animation =', self.animation)
-
-        def reset():
-            print('reset')
-
-        self.ui.pushButtonSave.clicked.connect(save)
-        self.ui.pushButtonReset.clicked.connect(reset)
 
         self.ui.pushButtonPrevKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair()[0]))
         self.ui.pushButtonNextKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair(cmp='>')[1]))
@@ -412,14 +407,6 @@ class ServoAdjustment(QMainWindow):
         #s.write(_str('3 0\r\n'))
 
         #s.write("1 " + _str(int(i)) + " " + _str(int(v)) + "\r\n")
-
-
-    def dumpValues(self):
-        print('self.mins =', self.mins)
-        print('self.maxs =', self.maxs)
-        print('self.offsets =', self.offsets)
-        print('self.poses =',self.poses)
-
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
