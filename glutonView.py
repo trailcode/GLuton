@@ -11,17 +11,6 @@ from ArcBall import *
 
 PI2 = 2.0*3.1415926535			# 2 * PI (not squared!) 		// PI Squared
 
-# *********************** Globals ***********************
-# Python 2.2 defines these directly
-
-g_Transform = Matrix4fT ()
-g_LastRot = Matrix3fT ()
-g_ThisRot = Matrix3fT ()
-
-g_ArcBall = ArcBallT (640, 480)
-g_isDragging = False
-g_quadratic = None
-
 def Torus(MinorRadius, MajorRadius):
 	# // Draw A Torus With Normals
 	glBegin( GL_TRIANGLE_STRIP );									# // Start A Triangle Strip
@@ -56,25 +45,32 @@ class GlutonView(QGLWidget):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
         self.setMouseTracking(True)
+        self.distance = -6.0
+        self.transform = Matrix4fT()
+        self.lastRot = Matrix3fT()
+        self.thisRot = Matrix3fT()
+
+        self.arcBall = ArcBallT(640, 480)
+        self.quadratic = None
 
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  # // Clear Screen And Depth Buffer
         glLoadIdentity();  # // Reset The Current Modelview Matrix
-        glTranslatef(-1.5, 0.0, -6.0);  # // Move Left 1.5 Units And Into The Screen 6.0
+        glTranslatef(-1.5, 0.0, self.distance);  # // Move Left 1.5 Units And Into The Screen 6.0
 
         glPushMatrix();  # // NEW: Prepare Dynamic Transform
-        glMultMatrixf(g_Transform);  # // NEW: Apply Dynamic Transform
+        glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
         glColor3f(0.75, 0.75, 1.0);
         Torus(0.30, 1.00);
         glPopMatrix();  # // NEW: Unapply Dynamic Transform
 
         glLoadIdentity();  # // Reset The Current Modelview Matrix
-        glTranslatef(1.5, 0.0, -6.0);  # // Move Right 1.5 Units And Into The Screen 7.0
+        glTranslatef(1.5, 0.0, self.distance);  # // Move Right 1.5 Units And Into The Screen 7.0
 
         glPushMatrix();  # // NEW: Prepare Dynamic Transform
-        glMultMatrixf(g_Transform);  # // NEW: Apply Dynamic Transform
+        glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
         glColor3f(1.0, 0.75, 0.75);
-        gluSphere(g_quadratic, 1.3, 20, 20);
+        gluSphere(self.quadratic, 1.3, 20, 20);
         glPopMatrix();  # // NEW: Unapply Dynamic Transform
 
     def resizeGL(self, width, height):
@@ -91,10 +87,9 @@ class GlutonView(QGLWidget):
 
         glMatrixMode(GL_MODELVIEW);  # // Select The Modelview Matrix
         glLoadIdentity();  # // Reset The Modelview Matrix
-        g_ArcBall.setBounds(width, height)  # //*NEW* Update mouse bounds for arcball
+        self.arcBall.setBounds(width, height)  # //*NEW* Update mouse bounds for arcball
 
     def initializeGL(self):
-        global g_quadratic
 
         glClearColor(0.0, 0.0, 0.0, 1.0)  # This Will Clear The Background Color To Black
         glClearDepth(1.0)  # Enables Clearing Of The Depth Buffer
@@ -103,11 +98,11 @@ class GlutonView(QGLWidget):
         glShadeModel(GL_FLAT);  # Select Flat Shading (Nice Definition Of Objects)
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)  # Really Nice Perspective Calculations
 
-        g_quadratic = gluNewQuadric();
-        gluQuadricNormals(g_quadratic, GLU_SMOOTH);
-        gluQuadricDrawStyle(g_quadratic, GLU_FILL);
+        self.quadratic = gluNewQuadric();
+        gluQuadricNormals(self.quadratic, GLU_SMOOTH);
+        gluQuadricDrawStyle(self.quadratic, GLU_FILL);
         # Why? this tutorial never maps any textures?! ?
-        # gluQuadricTexture(g_quadratic, GL_TRUE);			# // Create Texture Coords
+        # gluQuadricTexture(self.quadratic, GL_TRUE);			# // Create Texture Coords
 
         glEnable(GL_LIGHT0)
         glEnable(GL_LIGHTING)
@@ -126,22 +121,19 @@ class GlutonView(QGLWidget):
         QWidget.setMouseTracking(self, flag)
         recursive_set(self)
 
+    def doRotate(self, x, y):
+        print(x,y)
+        mouse_pt = Point2fT(x, y)
+        ThisQuat = self.arcBall.drag(mouse_pt)  # // Update End Vector And Get Rotation As Quaternion
+        self.thisRot = Matrix3fSetRotationFromQuat4f(ThisQuat)  # // Convert Quaternion Into Matrix3fT
+        # Use correct Linear Algebra matrix multiplication C = A * B
+        self.thisRot = Matrix3fMulMatrix3f(self.lastRot, self.thisRot)  # // Accumulate Last Rotation Into This One
+        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
+                                                         self.thisRot)  # // Set Our Final Transform's Rotation From This One
     def mouseMoveEvent(self, event):
         #print('mouseMoveEvent: x=%d, y=%d' % (event.x(), event.y()))
-        btns = event.buttons()
-        x = event.x()
-        y = event.y()
 
-        global g_LastRot, g_Transform, g_ThisRot
-
-        if btns & Qt.LeftButton:
-            mouse_pt = Point2fT(x, y)
-            ThisQuat = g_ArcBall.drag(mouse_pt)  # // Update End Vector And Get Rotation As Quaternion
-            g_ThisRot = Matrix3fSetRotationFromQuat4f(ThisQuat)  # // Convert Quaternion Into Matrix3fT
-            # Use correct Linear Algebra matrix multiplication C = A * B
-            g_ThisRot = Matrix3fMulMatrix3f(g_LastRot, g_ThisRot)  # // Accumulate Last Rotation Into This One
-            g_Transform = Matrix4fSetRotationFromMatrix3f(g_Transform,
-                                                          g_ThisRot)  # // Set Our Final Transform's Rotation From This One
+        if event.buttons() & Qt.LeftButton: self.doRotate(event.x(), event.y())
 
         self.paintGL()
         self.swapBuffers()
@@ -151,26 +143,31 @@ class GlutonView(QGLWidget):
         btns = event.buttons()
         x = event.x()
         y = event.y()
-        global g_isDragging, g_LastRot, g_Transform, g_ThisRot
         if btns & Qt.LeftButton:
-            g_LastRot = copy.copy(g_ThisRot);  # // Set Last Static Rotation To Last Dynamic One
-            g_isDragging = True  # // Prepare For Dragging
+            self.lastRot = copy.copy(self.thisRot);  # // Set Last Static Rotation To Last Dynamic One
             mouse_pt = Point2fT(x, y)
-            g_ArcBall.click(mouse_pt);  # // Update Start Vector And Prepare For Dragging
+            self.arcBall.click(mouse_pt);  # // Update Start Vector And Prepare For Dragging
 
 
-    def wheelEvent(self, event):
+    def wheelEvent(self, event : QWheelEvent):
         """
         Called by the Qt libraries whenever the window receives a mouse wheel change.
 
         This is used for zooming, or rather moving the camera ahead.
         """
         delta = event.delta()
-
-        atype = type(event);
-        ll = dir(event)
-        for i in ll: print(i)
-        #fsdfds
+        btns = event.buttons()
+        moda = event.modifiers()
+        x = event.x()
+        y = event.y()
+        self.lastRot = copy.copy(self.thisRot);  # // Set Last Static Rotation To Last Dynamic One
+        mouse_pt = Point2fT(x, y)
+        self.arcBall.click(mouse_pt);  # // Update Start Vector And Prepare For Dragging
+        if moda & Qt.ShiftModifier : self.doRotate(x, y + delta)
+        elif moda & Qt.AltModifier: self.doRotate(x + delta, y)
+        else:
+            self.distance += delta * 0.10
+        #print('delta', delta, 'x', event.x(), 'y', event.y(), 'xx', event.globalX(), 'yy', event.globalY())
 
         self.paintGL()
         self.swapBuffers()
