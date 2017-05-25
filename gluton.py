@@ -67,7 +67,10 @@ class ServoAdjustment(QMainWindow):
         self.interpolationMode = 0
         self.ui.interpolationComboBox.addItems(['B-Spline', '1D'])
 
-        def setMode(mode): self.interpolationMode = mode
+        def setMode(mode):
+            self.interpolationMode = mode
+            self.glutonCanvas.glDraw()
+            self.canvas.glDraw()
 
         self.ui.interpolationComboBox.activated.connect(setMode)
 
