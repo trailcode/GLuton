@@ -3,7 +3,7 @@ from PyQt4 import uic, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
-from scipy.interpolate import splrep, splev
+from scipy.interpolate import splrep, splev, UnivariateSpline
 from ServosPosGraph import ServosPosGraph
 from glutonView import GlutonView
 from spyderlib.widgets import internalshell
@@ -65,7 +65,7 @@ class ServoAdjustment(QMainWindow):
         self.center()
 
         self.interpolationMode = 0
-        self.ui.interpolationComboBox.addItems(['B-Spline', '1D'])
+        self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', '1D'])
 
         def setMode(mode):
             self.interpolationMode = mode
@@ -304,6 +304,19 @@ class ServoAdjustment(QMainWindow):
                                    np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
 
                         self.servoValueSliders[i].setValue(splev(t, s))
+
+                    except:
+
+                        intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                        self.servoValueSliders[i].setValue(intp(t))
+            elif self.interpolationMode == 1:
+                for i in range(len(A)):
+
+                    try:
+                        s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                             np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
+
+                        self.servoValueSliders[i].setValue(s(t))
 
                     except:
 
