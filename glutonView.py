@@ -1,12 +1,8 @@
-import math
 from math import cos, sin
-
 from OpenGL.raw.GLUT import glutSolidCube
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import OpenGL.GLUT
-from PyQt4.QtGui import QColor, QMatrix4x4, QVector2D, QVector3D, QVector4D, QQuaternion
 from PyQt4.QtCore import QObject, Qt
 from PyQt4.QtGui import *
 from ArcBall import *
@@ -56,6 +52,7 @@ class GlutonView(QGLWidget):
         self.quadratic = None
 
     def paintGL(self):
+        self.makeCurrent()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  # // Clear Screen And Depth Buffer
         glLoadIdentity();  # // Reset The Current Modelview Matrix
         glTranslatef(-1.5, 0.0, self.distance);  # // Move Left 1.5 Units And Into The Screen 6.0

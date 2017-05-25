@@ -1,27 +1,13 @@
 import os
-import sys
-import PyQt4
-from PyQt4.QtGui import QMainWindow
-from PyQt4.QtOpenGL import *
-from OpenGL.GL import *
 from PyQt4 import uic, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev
-from itertools import product
 from ServosPosGraph import ServosPosGraph
 from glutonView import GlutonView
-from ConsoleWidget import ConsoleWidget
-from SpyderConsoleWidget import SpyderConsoleWidget
 from spyderlib.widgets import internalshell
 import numpy as np
-from guiUtils import guirestore, guisave
-#from projexui.widgets.xconsoleedit import XConsoleEdit
-
-#from python_qt_binding.QtGui import QFont
-from PyQt4.QtGui import QFont
-
 import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial

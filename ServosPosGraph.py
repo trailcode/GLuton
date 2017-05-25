@@ -20,7 +20,7 @@ class ServosPosGraph(QGLWidget):
         self.setMouseTracking(True)
 
     def paintGL(self):
-
+        self.makeCurrent()
         t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(0.0, 0.0, 1.0)
