@@ -30,6 +30,15 @@ def get_truth(inp, relate, cut):
            '=': operator.eq}
     return ops[relate](inp, cut)
 
+
+class _Event(QEvent):
+    EVENT_TYPE = QEvent.Type(QEvent.registerEventType())
+
+    def __init__(self, callback):
+        # thread-safe
+        QEvent.__init__(self, _Event.EVENT_TYPE)
+        self.callback = callback
+
 class ServoAdjustment(QMainWindow):
     def __init__(self):
         super(ServoAdjustment, self).__init__()
@@ -55,6 +64,12 @@ class ServoAdjustment(QMainWindow):
 
         self.ui.actionSave.triggered.connect(save)
 
+        def keyPosChanged(value):
+            #print(value)
+            pass
+
+        self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
+
         self.currBeingEdited = 0
 
         self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
@@ -65,7 +80,7 @@ class ServoAdjustment(QMainWindow):
         self.center()
 
         self.interpolationMode = 0
-        self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', '1D'])
+        self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', 'Interpolated Univariate Spline', '1D'])
 
         def setMode(mode):
             self.interpolationMode = mode
@@ -193,7 +208,7 @@ class ServoAdjustment(QMainWindow):
         file.close()
         """
         try:
-            dasd
+
             UI_VERSION = 1
             programname = os.path.basename(__file__)
             programbase, ext = os.path.splitext(programname)
@@ -213,8 +228,11 @@ class ServoAdjustment(QMainWindow):
 
 
 
-        #self.showMaximized()
+        self.showMaximized()
 
+    def customEvent(self, event):
+        # process idle_queue_dispatcher events
+        event.callback()
 
     def closeEvent(self, event):
         """
@@ -281,6 +299,8 @@ class ServoAdjustment(QMainWindow):
     def servoSliderChanged(self, index, value):
         t = self.timeSlider.value()
 
+        self.ui.keyPosSlider.setValue(self.canvas.closestKey)
+
         if index == self.names.index('time'):
 
             self.timeLabel.setText(str(value))
@@ -290,6 +310,11 @@ class ServoAdjustment(QMainWindow):
             keyPair = self.getCurrKeyPair()
             if keyPair is None: return
             self.inTime = True
+
+            #print('key', keyPair[0])
+
+            #QApplication.postEvent(self, _Event(lambda : print('key', self.canvas.closestKey)))
+
             A = self.animation[keyPair[0]]
             B = self.animation[keyPair[1]]
 

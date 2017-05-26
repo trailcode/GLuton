@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from PyQt4.QtCore import QObject
 from PyQt4.QtGui import *
 from scipy.interpolate import interp1d
-from scipy.interpolate import splrep, splev
+from scipy.interpolate import splrep, splev, UnivariateSpline, InterpolatedUnivariateSpline
 import numpy as np
 
 class ServosPosGraph(QGLWidget):
@@ -18,9 +18,9 @@ class ServosPosGraph(QGLWidget):
         self.colors = [(70,128,50),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
                        (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
         self.setMouseTracking(True)
+        self.closestKey = 0
 
     def paintGL(self):
-        print('paint')
         self.makeCurrent()
         t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
@@ -34,7 +34,7 @@ class ServosPosGraph(QGLWidget):
 
         ani = self.servoAdjustment.animation
 
-        closest = self.servoAdjustment.getClosestKey()
+        self.closestKey = self.servoAdjustment.getClosestKey()
 
         glColor3f(1, 1, 1)
 
@@ -50,8 +50,8 @@ class ServosPosGraph(QGLWidget):
             else: glColor3f(1,1,1)
             """
 
-            if i != closest:    glPointSize(3)
-            else:               glPointSize(6)
+            if i != self.closestKey:   glPointSize(3)
+            else:                      glPointSize(6)
 
             glBegin(GL_POINTS)
             for t in ani[i]: glVertex2d(i,t)
@@ -91,14 +91,53 @@ class ServosPosGraph(QGLWidget):
                 try:
                     s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                 np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
-                    x2 = np.linspace(0, 256, 256)
-                    y2 = splev(x2, s)
+                    x = np.linspace(0, 256, 256)
+                    y = splev(x, s)
                     glBegin(GL_LINE_STRIP)
-                    for i in range(len(y2)): glVertex2f(x2[i], y2[i])
+                    for i in range(len(y)): glVertex2f(x[i], y[i])
                     glEnd()
 
                 except: do1D_Interpolation(index)
                 index += 1
+
+        elif self.servoAdjustment.interpolationMode == 1:
+            index = 0
+            for i in values:
+                setColorAndLineWidth(index)
+
+                try:
+                    s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                         np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
+
+                    x = np.linspace(0, 256, 256)
+                    y = s(x)
+                    glBegin(GL_LINE_STRIP)
+                    for i in range(len(y)): glVertex2f(x[i], y[i])
+                    glEnd()
+
+                except:
+                    do1D_Interpolation(index)
+                index += 1
+            """
+            elif self.servoAdjustment.interpolationMode == 2:
+            index = 0
+            for i in values:
+                setColorAndLineWidth(index)
+
+                try:
+                    s = InterpolatedUnivariateSpline(   np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                                        np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int))
+
+                    x = np.linspace(0, 256, 256)
+                    y = s(x)
+                    glBegin(GL_LINE_STRIP)
+                    for i in range(len(y)): glVertex2f(x[i], y[i])
+                    glEnd()
+
+                except:
+                    do1D_Interpolation(index)
+                index += 1
+            """
         else:
         #if True:
             for j in range(len(self.servoAdjustment.animation[0])): do1D_Interpolation(j)
