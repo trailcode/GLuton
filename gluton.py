@@ -55,6 +55,7 @@ class ServoAdjustment(QMainWindow):
         self.ui.glutonViewLayout.addWidget(self.glutonCanvas)
 
         self.background_pixmap = QPixmap('logo.png')
+        self.inServoSliderChange = False
 
         def save():
             print('  self.mins =', self.mins)
@@ -65,8 +66,10 @@ class ServoAdjustment(QMainWindow):
         self.ui.actionSave.triggered.connect(save)
 
         def keyPosChanged(value):
-            #print(value)
-            pass
+            if self.inServoSliderChange: return
+            self.animation[value] = self.animation.pop(self.canvas.closestKey)
+            self.canvas.glDraw()
+            self.updateServoSliders()
 
         self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
 
@@ -165,12 +168,24 @@ class ServoAdjustment(QMainWindow):
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
         """
 
+        """
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
         self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
+                          177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
+                          """
+
+        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
+        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
+        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
+                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
+        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
+                          124: [84, 76, 54, 95, 54, 69, 120, 68, 115, 39, 160, 49],
+                          62: [45, 42, 33, 50, 33, 39, 60, 56, 58, 21, 77, 31],
                           177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
@@ -184,16 +199,16 @@ class ServoAdjustment(QMainWindow):
 
         self.servoChanged(0)
 
-        self.ui.pushButtonPrevKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair()[0]))
-        self.ui.pushButtonNextKey.clicked.connect(lambda : self.timeSlider.setValue(self.getCurrKeyPair(cmp='>')[1]))
+        def jumpToKey(key):
+            self.canvas.closestKey = key
+            self.timeSlider.setValue(key)
+
+        self.ui.pushButtonPrevKey.clicked.connect(lambda : jumpToKey(self.getCurrKeyPair()[0]))
+        self.ui.pushButtonNextKey.clicked.connect(lambda : jumpToKey(self.getCurrKeyPair(cmp='>')[1]))
 
         self.inTime = False
 
         for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
-
-        # self.consoleVariables = {"canvas": self.canvas, "animation": self.animation}
-        # self.console = ConsoleWidget(self, self.consoleVariables)
-        # self.ui.consoleLayout.addWidget(self.console)
 
         global gui
         gui = self
@@ -224,10 +239,6 @@ class ServoAdjustment(QMainWindow):
 
         except: pass
 
-        print(self.geometry())
-
-
-
         self.showMaximized()
 
     def customEvent(self, event):
@@ -251,8 +262,6 @@ class ServoAdjustment(QMainWindow):
         settings.setValue("state", self.ui.saveState(UI_VERSION))  # save settings (UI_VERSION is a constant you should increment when your UI changes significantly to prevent attempts to restore an invalid state.)
         settings.setValue("keyValueGrapDockWidget", self.ui.keyValueGrapDockWidget.saveGeometry())
         #settings.setValue("mainWinGeom", self.get)
-
-
 
     def deleteCurrKey(self):
         self.animation.pop(self.getClosestKey())
@@ -284,7 +293,6 @@ class ServoAdjustment(QMainWindow):
         return pair[1]
 
     def getOrderedKeysValues(self):
-        # """ Code duplication, also in ServosPosGraph
         keys = list(self.animation.keys())
         if keys == []: return (None, None)
         values = list(self.animation.values())
@@ -296,67 +304,73 @@ class ServoAdjustment(QMainWindow):
         keys.sort()
         return (keys, valuesOrdered)
 
-    def servoSliderChanged(self, index, value):
+    def updateServoSliders(self):
+        keyPair = self.getCurrKeyPair()
+        if keyPair is None: return
+        self.inTime = True
+
+        A = self.animation[keyPair[0]]
+        B = self.animation[keyPair[1]]
+
+        keys, values = self.getOrderedKeysValues()
+
         t = self.timeSlider.value()
 
-        self.ui.keyPosSlider.setValue(self.canvas.closestKey)
+        if self.interpolationMode == 0:
+
+            for i in range(len(A)):
+
+                try:
+                    s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                               np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
+
+                    self.servoValueSliders[i].setValue(splev(t, s))
+
+                except:
+
+                    intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                    self.servoValueSliders[i].setValue(intp(t))
+        elif self.interpolationMode == 1:
+            for i in range(len(A)):
+
+                try:
+                    s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                         np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
+
+                    self.servoValueSliders[i].setValue(s(t))
+
+                except:
+
+                    intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                    self.servoValueSliders[i].setValue(intp(t))
+        else:
+            for i in range(len(A)):
+                intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+                self.servoValueSliders[i].setValue(intp(t))
+
+        self.inTime = False
+
+    def servoSliderChanged(self, index, value):
 
         if index == self.names.index('time'):
+
+            self.inServoSliderChange = True
+
+            self.ui.keyPosSlider.setValue(self.canvas.closestKey)
+
+            self.inServoSliderChange = False
 
             self.timeLabel.setText(str(value))
 
             self.ui.labelKey.setText('Key: ' + str(self.getCurrKeyPair(justIndex = True)))
 
-            keyPair = self.getCurrKeyPair()
-            if keyPair is None: return
-            self.inTime = True
-
-            #print('key', keyPair[0])
-
-            #QApplication.postEvent(self, _Event(lambda : print('key', self.canvas.closestKey)))
-
-            A = self.animation[keyPair[0]]
-            B = self.animation[keyPair[1]]
-
-            keys, values = self.getOrderedKeysValues()
-
-            if self.interpolationMode == 0:
-
-                for i in range(len(A)):
-
-                    try:
-                        s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                   np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
-
-                        self.servoValueSliders[i].setValue(splev(t, s))
-
-                    except:
-
-                        intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                        self.servoValueSliders[i].setValue(intp(t))
-            elif self.interpolationMode == 1:
-                for i in range(len(A)):
-
-                    try:
-                        s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                             np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
-
-                        self.servoValueSliders[i].setValue(s(t))
-
-                    except:
-
-                        intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                        self.servoValueSliders[i].setValue(intp(t))
-            else:
-                for i in range(len(A)):
-                    intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                    self.servoValueSliders[i].setValue(intp(t))
-
-            self.inTime = False
+            self.updateServoSliders()
 
         else:
-            #print('self.inTime', self.inTime)
+
             if self.inTime: return
+
+            t = self.timeSlider.value()
 
             self.servoValueLabels[index].setText(str(value))
             self.animation[t] = []
