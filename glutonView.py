@@ -57,19 +57,26 @@ class GlutonView(QGLWidget):
         self.root = SceneGraphNode()
         self.servos['root'] = self.root
 
-        """
-        'Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
-                      'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time'
-                      """
-
         def addServo(name, parent, servo):
             self.servos[name] = servo
             self.servos[parent].addChild(servo)
 
-        addServo('Right Hip', 'root', SceneGraphNode(positionOffset = QVector3D(1,0,0), rotationAxis = QVector3D(1,0,0)))
-        addServo('Right Knee', 'Right Hip', SceneGraphNode(positionOffset = QVector3D(0,-1,0), rotationAxis = QVector3D(1, 0, 0)))
-        addServo('Right Ankle', 'Right Knee', SceneGraphNode(positionOffset = QVector3D(0, -1, 0), rotationAxis = QVector3D(0, 1, 1)))
-        addServo('chest', 'root', SceneGraphNode(positionOffset = QVector3D(0,2,0)))
+        addServo('Right Hip',       'root',             SceneGraphNode(QVector3D(1,0,0), QVector3D(1,0,0)))
+        addServo('Left Hip',        'root',             SceneGraphNode(QVector3D(-1, 0, 0), QVector3D(1, 0, 0)))
+        addServo('Right Knee',      'Right Hip',        SceneGraphNode(QVector3D(0,-1,0), QVector3D(1, 0, 0)))
+        addServo('Left Knee',       'Left Hip',         SceneGraphNode(QVector3D(0, -1, 0), QVector3D(1, 0, 0)))
+        addServo('Right Ankle',     'Right Knee',       SceneGraphNode(QVector3D(0, -1, 0), QVector3D(0, 1, 0)))
+        addServo('Left Ankle',      'Left Knee',        SceneGraphNode(QVector3D(0, -1, 0), QVector3D(0, 1, 0)))
+        addServo('chest',           'root',             SceneGraphNode(QVector3D(0,2,0)))
+        addServo('Right Shoulder',  'chest',            SceneGraphNode(QVector3D(1.3, 0, 0), QVector3D(1, 0, 0)))
+        addServo('Left Shoulder',   'chest',            SceneGraphNode(QVector3D(-1.3, 0, 0), QVector3D(1, 0, 0)))
+        addServo('Right Elbow',     'Right Shoulder',   SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
+        addServo('Left Elbow',      'Left Shoulder',    SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
+        addServo('Right Wrist',     'Right Elbow',      SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
+        addServo('Left Wrist',      'Left Elbow',       SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
+        addServo('Right Hand',      'Right Wrist',      SceneGraphNode(QVector3D(0, -0.2, 0), QVector3D(1, 0, 0)))
+        addServo('Left Hand',       'Left Wrist',       SceneGraphNode(QVector3D(0, -0.2, 0), QVector3D(1, 0, 0)))
+        addServo('Head',            'chest',            SceneGraphNode(QVector3D(0, 0.8, 0), QVector3D(1, 0, 0)))
 
 
     def paintGL(self):
