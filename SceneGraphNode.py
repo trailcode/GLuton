@@ -3,14 +3,17 @@ from OpenGL.raw.GLUT import *
 from PyQt4.QtGui import *
 
 class SceneGraphNode:
-    def __init__(self, positionOffset = QVector3D(0.0, 0.0, 0.0), rotationAxis = QVector3D(0,0,0)):
+    def __init__(self, positionOffset = QVector3D(0.0, 0.0, 0.0), rotationAxis = QVector3D(0,0,0), angleOffset = 0):
         self.positionOffset = positionOffset
         self.children = []
         self.rotationAxis = rotationAxis
         self.parent = None
         self.angle = 0
-        self.distanceFromParent = 1
+        self.angleOffset = angleOffset
         self.position = QVector3D(0.0, 0.0, 0.0)
+
+    def setAngle(self, angle):
+        self.angle = angle + self.angleOffset
 
     def getPosition(self):
         return self.position
@@ -40,16 +43,22 @@ class SceneGraphNode:
         self.m = self.m * parentM
         p *= self.m
         p += parentPos
+        glDisable(GL_LIGHTING)
         glColor4f(0,1,0.75,1)
         glLineWidth(3)
         glBegin(GL_LINES)
         glVertex3f(parentPos.x(), parentPos.y(), parentPos.z())
         glVertex3f(p.x(), p.y(), p.z())
         glEnd()
+        glEnable(GL_LIGHTING)
         glPushMatrix()
         glTranslatef(p.x(), p.y(), p.z())
         glColor4f(1,0.75,0,1)
-        glutSolidSphere(0.2, 10,10)
+        mm = QMatrix4x4(self.m)
+        mm.rotate(self.angle, self.rotationAxis.x(), self.rotationAxis.y(), self.rotationAxis.z())
+        glMultMatrixf(mm.transposed().data())
+        glutSolidCube(0.2)
+        #glutSolidSphere(0.2, 10, 10)
         glPopMatrix()
         self.position = p
 

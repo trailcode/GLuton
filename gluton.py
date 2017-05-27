@@ -217,6 +217,7 @@ class ServoAdjustment(QMainWindow):
         self.ui.horizontalSliderOffset.valueChanged.connect(self.offsetChanged)
         self.ui.horizontalSliderPos.valueChanged.connect(self.posChanged)
         self.ui.pushButtonZeroPos.clicked.connect(lambda : self.ui.horizontalSliderPos.setValue(1024))
+        self.ui.zeroOffsetButton.clicked.connect(lambda : self.ui.horizontalSliderOffset.setValue(1024))
         self.ui.pushButtonDeleteKey.clicked.connect(self.deleteCurrKey)
 
         for i in range(len(self.mins)): self.servoChanged(i)
@@ -247,6 +248,7 @@ class ServoAdjustment(QMainWindow):
         file.close()
         """
         try:
+            #dsads
 
             UI_VERSION = 1
             programname = os.path.basename(__file__)
@@ -398,7 +400,7 @@ class ServoAdjustment(QMainWindow):
 
             try:
 
-                self.glutonCanvas.servos[self.names[index]].angle = value
+                self.glutonCanvas.servos[self.names[index]].setAngle(value)
                 self.glutonCanvas.glDraw()
 
             except:
@@ -463,7 +465,9 @@ class ServoAdjustment(QMainWindow):
         o = 0.5 + u + self.offsets[i]
         #print('o' + str(o))
         u = max(0, min(1.0, o))
-        v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (1.0 + u) * 0.5
+        #v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (1.0 + u) * 0.5
+        #v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (u) * 0.5
+        v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * u
 
         try:
             self.ui.labelServoName.setText(self.names[self.currServo] + ' value: ' + str(int(v)))
