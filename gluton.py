@@ -55,7 +55,8 @@ class ServoAdjustment(QMainWindow):
         self.ui.glutonViewLayout.addWidget(self.glutonCanvas)
 
         self.background_pixmap = QPixmap('logo.png')
-        self.inServoSliderChange = False
+        self.settingKeyPos = False
+        self.inServoOrTimeSliderChange = False
         self.prevKeyValue = None
         def save():
             print('  self.mins =', self.mins)
@@ -66,7 +67,7 @@ class ServoAdjustment(QMainWindow):
         self.ui.actionSave.triggered.connect(save)
 
         def keyPosChanged(value):
-            if self.inServoSliderChange: return
+            if self.settingKeyPos: return
 
             """
             if self.prevKeyValue is not None:
@@ -163,10 +164,18 @@ class ServoAdjustment(QMainWindow):
             slider = MySlider(index, self, Qt.Horizontal)
             slider.setMaximum(256)
             self.sliders += [slider]
-            valueLabel = QLabel()
-            valueLabel.setText(str(slider.value()))
-            valueLabel.setFixedWidth(25)
-            #valueLabel.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            spinBox = QSpinBox()
+            spinBox.setValue(slider.value())
+            spinBox.setMaximum(255)
+            spinBox.setFixedWidth(45)
+
+            slider.valueChanged.connect(lambda value, box = spinBox : box.setValue(value))
+
+            def valueChanged(s, value):
+                if self.inServoOrTimeSliderChange: return
+                s.setValue(value)
+
+            spinBox.valueChanged.connect(lambda value, s = slider: valueChanged(s, value))
 
             global _self
             _self = self
@@ -176,53 +185,22 @@ class ServoAdjustment(QMainWindow):
             box.addWidget(label)
             label.setMaximumHeight(15)
             slider.setMaximumHeight(15)
-            valueLabel.setMaximumHeight(15)
+            spinBox.setMaximumHeight(15)
             box.addWidget(slider)
-            box.addWidget(valueLabel)
+            box.addWidget(spinBox)
             box.setContentsMargins(0,0,0,0)
 
             if i != 'time':
                 self.servoValueSliders.append(slider)
-                self.servoValueLabels.append(valueLabel)
+                self.servoValueLabels.append(spinBox)
                 self.ui.verticalLayoutServoPositions.addLayout(box)
 
             else:
                 self.timeSlider = slider
-                self.timeLabel = valueLabel
+                self.timeLabel = spinBox
                 self.ui.horizontalLayoutTime.addLayout(box)
 
         self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-
-        """
-        self.animations = [{0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0], 76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]},
-
-                           {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
-                            18: [18, 38, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            165: [113, 101, 71, 126, 34, 126, 126, 126, 126, 126, 126, 126],
-                            151: [153, 106, 124, 106, 0, 106, 106, 106, 106, 106, 106, 106],
-                            177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89],
-                            76: [80, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
-                           ]
-
-
-        self.animation = self.animations[1]
-
-        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
-        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
-        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
-                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
-        """
-
-        """
-        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
-        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
-        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
-                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
-        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
-                          177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
-                          """
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
@@ -398,17 +376,19 @@ class ServoAdjustment(QMainWindow):
 
     def servoSliderChanged(self, index, value):
 
+        self.inServoOrTimeSliderChange = True
+
         if index == self.names.index('time'):
 
-            self.inServoSliderChange = True
+            self.settingKeyPos = True
 
             self.ui.keyPosSlider.setValue(self.canvas.closestKey)
 
             self.prevKeyValue = self.canvas.closestKey
 
-            self.inServoSliderChange = False
+            self.settingKeyPos = False
 
-            self.timeLabel.setText(str(value))
+            self.timeLabel.setValue(value)
 
             self.ui.labelKey.setText('Key: ' + str(self.getCurrKeyPair(justIndex = True)))
 
@@ -424,11 +404,14 @@ class ServoAdjustment(QMainWindow):
             except:
                 pass
 
-            if self.inTime: return
+            if self.inTime:
+                self.inServoOrTimeSliderChange = False
+                return
 
             t = self.timeSlider.value()
 
-            self.servoValueLabels[index].setText(str(value))
+            self.servoValueLabels[index].setValue(value)
+
             self.animation[t] = []
 
             values = []
@@ -436,6 +419,8 @@ class ServoAdjustment(QMainWindow):
             for i in self.servoValueSliders: values += [i.value()]
 
             self.animation[t] = values
+
+        self.inServoOrTimeSliderChange = False
 
         self.canvas.paintGL()
         self.canvas.swapBuffers()
