@@ -214,12 +214,23 @@ class ServoAdjustment(QMainWindow):
                           177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
                           """
 
+        """
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
         self.animation = {0: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
                           256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128]}
+        """
+
+        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
+        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
+        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
+                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
+        self.animation = {0: [128, 128, 128, 128, 128, 128, 127, 128, 128, 128, 128, 128],
+                          256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
+                          52: [128, 167, 91, 128, 128, 128, 127, 79, 173, 128, 128, 128],
+                          21: [128, 146, 107, 128, 128, 128, 127, 89, 157, 128, 128, 128]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -230,6 +241,8 @@ class ServoAdjustment(QMainWindow):
         self.ui.pushButtonDeleteKey.clicked.connect(self.deleteCurrKey)
 
         for i in range(len(self.mins)): self.servoChanged(i)
+
+        self.servoChanged(0)
 
         def jumpToKey(key):
             self.canvas.closestKey = key
@@ -399,9 +412,10 @@ class ServoAdjustment(QMainWindow):
         else:
 
             try:
-
-                self.glutonCanvas.servos[self.names[index]].setAngle(value)
-                self.glutonCanvas.glDraw()
+                v= self.getServoValue(index, value / 255.0) / 700.0 * 360.0
+                #self.glutonCanvas.servos[self.names[index]].setAngle(v)
+                self.glutonCanvas.servos[self.names[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
+                self.glutonCanvas.glDraw() # Redrawing more then required
 
             except:
                 pass
@@ -459,18 +473,19 @@ class ServoAdjustment(QMainWindow):
         self.poses[self.currServo] = v
         self.setServo()
 
-    def getServoValue(self, i):
-        u = self.poses[i]
+    def getServoValue(self, i, u):
         o = 0.5 + u + self.offsets[i]
         u = max(0, min(1.0, o))
         return self.mins[i] + float(self.maxs[i] - self.mins[i]) * u
 
     def setServo(self, i=None, u=None):
 
-        v = self.getServoValue(self.currServo)
+        v = self.getServoValue(self.currServo, self.poses[self.currServo])
 
         try: self.ui.labelServoName.setText(self.names[self.currServo] + ' value: ' + str(int(v)))
         except: pass
+
+
 
         c = "1 " + str(int(self.currServo)) + " " + str(int(v)) + "\r\n"
         #print(c)

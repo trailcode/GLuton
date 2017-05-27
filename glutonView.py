@@ -61,14 +61,14 @@ class GlutonView(QGLWidget):
             self.servos[name] = servo
             self.servos[parent].addChild(servo)
 
-        addServo('Right Hip',       'root',             SceneGraphNode(QVector3D(1,0,0), QVector3D(1,0,0)))
-        addServo('Left Hip',        'root',             SceneGraphNode(QVector3D(-1, 0, 0), QVector3D(1, 0, 0)))
-        addServo('Right Knee',      'Right Hip',        SceneGraphNode(QVector3D(0,-1,0), QVector3D(1, 0, 0)))
-        addServo('Left Knee',       'Left Hip',         SceneGraphNode(QVector3D(0, -1, 0), QVector3D(1, 0, 0)))
-        addServo('Right Ankle',     'Right Knee',       SceneGraphNode(QVector3D(0, -1, 0), QVector3D(0, 0, 1)))
-        addServo('Left Ankle',      'Left Knee',        SceneGraphNode(QVector3D(0, -1, 0), QVector3D(0, 0, 1)))
+        addServo('Right Hip',       'root',             SceneGraphNode(QVector3D(1,0,0),      QVector3D(1,0,0),   [1,0.45,0,1]))
+        addServo('Left Hip',        'root',             SceneGraphNode(QVector3D(-1, 0, 0),   QVector3D(1, 0, 0), [0,0.45,1]))
+        addServo('Right Knee',      'Right Hip',        SceneGraphNode(QVector3D(0,-1,0),     QVector3D(1, 0, 0), [1,0.45,0,1]))
+        addServo('Left Knee',       'Left Hip',         SceneGraphNode(QVector3D(0, -1, 0),   QVector3D(1, 0, 0), [0,0.45,1]))
+        addServo('Right Ankle',     'Right Knee',       SceneGraphNode(QVector3D(0, -1, 0),   QVector3D(0, 0, 1), [1,0.45,0,1]))
+        addServo('Left Ankle',      'Left Knee',        SceneGraphNode(QVector3D(0, -1, 0),   QVector3D(0, 0, 1), [0,0.45,1]))
         addServo('chest',           'root',             SceneGraphNode(QVector3D(0,2,0)))
-        addServo('Right Shoulder',  'chest',            SceneGraphNode(QVector3D(1.3, 0, 0), QVector3D(1, 0, 0)))
+        addServo('Right Shoulder',  'chest',            SceneGraphNode(QVector3D(1.3, 0, 0),  QVector3D(1, 0, 0)))
         addServo('Left Shoulder',   'chest',            SceneGraphNode(QVector3D(-1.3, 0, 0), QVector3D(1, 0, 0)))
         addServo('Right Elbow',     'Right Shoulder',   SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
         addServo('Left Elbow',      'Left Shoulder',    SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
@@ -76,9 +76,9 @@ class GlutonView(QGLWidget):
         addServo('Left Wrist',      'Left Elbow',       SceneGraphNode(QVector3D(0, -0.7, 0), QVector3D(1, 0, 0)))
         addServo('Right Hand',      'Right Wrist',      SceneGraphNode(QVector3D(0, -0.2, 0), QVector3D(1, 0, 0)))
         addServo('Left Hand',       'Left Wrist',       SceneGraphNode(QVector3D(0, -0.2, 0), QVector3D(1, 0, 0)))
-        addServo('Head',            'chest',            SceneGraphNode(QVector3D(0, 0.8, 0), QVector3D(1, 0, 0)))
-        addServo('Right Foot',      'Right Ankle',      SceneGraphNode(QVector3D(0.3, 0, 0), QVector3D(1, 0, 0)))
-        addServo('Left Foot',       'Left Ankle',       SceneGraphNode(QVector3D(-0.3, 0, 0), QVector3D(1, 0, 0)))
+        addServo('Head',            'chest',            SceneGraphNode(QVector3D(0, 0.8, 0),  QVector3D(1, 0, 0)))
+        addServo('Right Foot',      'Right Ankle',      SceneGraphNode(QVector3D(0.3, 0, 0),  QVector3D(1, 0, 0), [1,0.45,0,1]))
+        addServo('Left Foot',       'Left Ankle',       SceneGraphNode(QVector3D(-0.3, 0, 0), QVector3D(1, 0, 0), [0,0.45,1]))
 
 
     def paintGL(self):
@@ -91,9 +91,24 @@ class GlutonView(QGLWidget):
 
         glPushMatrix()
         glMultMatrixf(self.transform)
+        self.drawGroundGrid()
         glColor3f(1, 0.75, 0.75)
         self.root.render()
         glPopMatrix()
+
+    def drawGroundGrid(self):
+        glDisable(GL_LIGHTING)
+        glColor3f(0,0.7,.3)
+        glLineWidth(1)
+        glBegin(GL_LINES)
+        size = 10
+        for i in range(-size, size + 1):
+            glVertex3f(i, 0, size)
+            glVertex3f(i, 0, -size)
+            glVertex3f(size, 0, i)
+            glVertex3f(-size, 0, i)
+        glEnd()
+
 
     def resizeGL(self, width, height):
         if height == 0:  # Prevent A Divide By Zero If The Window Is Too Small

@@ -3,13 +3,20 @@ from OpenGL.raw.GLUT import *
 from PyQt4.QtGui import *
 
 class SceneGraphNode:
-    def __init__(self, positionOffset = QVector3D(0.0, 0.0, 0.0), rotationAxis = QVector3D(0,0,0), angleOffset = 0):
+    def __init__(self,
+                 positionOffset = QVector3D(0.0, 0.0, 0.0),
+                 rotationAxis = QVector3D(0,0,0),
+                 #angleOffset = 0
+                 color = [1,0.75,0,1]
+                 ):
         self.positionOffset = positionOffset
         self.children = []
         self.rotationAxis = rotationAxis
         self.parent = None
         self.angle = 0
-        self.angleOffset = angleOffset
+        #self.angleOffset = angleOffset
+        self.angleOffset = 0
+        self.color = color
         self.position = QVector3D(0.0, 0.0, 0.0)
 
     def setAngle(self, angle):
@@ -53,7 +60,7 @@ class SceneGraphNode:
         glEnable(GL_LIGHTING)
         glPushMatrix()
         glTranslatef(p.x(), p.y(), p.z())
-        glColor4f(1,0.75,0,1)
+        glColor4f(self.color[0], self.color[1], self.color[2], 1)
         mm = QMatrix4x4(self.m)
         axis = self.rotationAxis
         axis *= self.m
