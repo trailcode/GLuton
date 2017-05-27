@@ -81,19 +81,17 @@ class GlutonView(QGLWidget):
 
     def paintGL(self):
         self.makeCurrent()
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  # // Clear Screen And Depth Buffer
-        glLoadIdentity();  # // Reset The Current Modelview Matrix
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glLoadIdentity()
 
-        glLoadIdentity();  # // Reset The Current Modelview Matrix
-        glTranslatef(0, 0.0, self.distance);  # // Move Right 1.5 Units And Into The Screen 7.0
+        glLoadIdentity()
+        glTranslatef(0, 0.0, self.distance)
 
-        glPushMatrix();  # // NEW: Prepare Dynamic Transform
-        glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
-        glColor3f(1, 0.75, 0.75);
-        #gluSphere(self.quadratic, 1.3, 20, 20);
-        #glutSolidCube(1, 1)
+        glPushMatrix()
+        glMultMatrixf(self.transform)
+        glColor3f(1, 0.75, 0.75)
         self.root.render()
-        glPopMatrix();  # // NEW: Unapply Dynamic Transform
+        glPopMatrix()
 
     def resizeGL(self, width, height):
         if height == 0:  # Prevent A Divide By Zero If The Window Is Too Small

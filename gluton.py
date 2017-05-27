@@ -463,13 +463,13 @@ class ServoAdjustment(QMainWindow):
     def offsetChanged(self, value):
         v = float(value) / float(self.ui.horizontalSliderOffset.maximum()) - 0.5
         self.offsets[self.currServo] = v
-        self.ui.labelOffset.setText('Offset: ' + str(v))
+        self.ui.labelOffset.setText('Offset: ' + "{0:.4f}".format(v))
         self.setServo()
 
     def posChanged(self, value):
-        self.v = float(value) / float(self.ui.horizontalSliderPos.maximum()) - 0.5
-        self.ui.labelPos.setText('Pos: ' + str(self.v))
-        self.poses[self.currServo] = self.v
+        v = float(value) / float(self.ui.horizontalSliderPos.maximum()) - 0.5
+        self.ui.labelPos.setText('Pos: ' + "{0:.4f}".format(v))
+        self.poses[self.currServo] = v
         self.setServo()
 
     def setServo(self, i=None, u=None):
@@ -478,7 +478,7 @@ class ServoAdjustment(QMainWindow):
         o = 0.5 + u + self.offsets[i]
         #print('o' + str(o))
         u = max(0, min(1.0, o))
-        v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (1.0 + u) * 0.5;
+        v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (1.0 + u) * 0.5
 
         try:
             self.ui.labelServoName.setText(self.names[self.currServo] + ' value: ' + str(int(v)))
