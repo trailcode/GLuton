@@ -44,21 +44,33 @@ class GlutonView(QGLWidget):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
         self.setMouseTracking(True)
-        self.distance = -6.0
+        self.distance = -16.0
         self.transform = Matrix4fT()
         self.lastRot = Matrix3fT()
         self.thisRot = Matrix3fT()
 
         self.arcBall = ArcBallT(640, 480)
         self.quadratic = None
+
+        self.servos = {}
+
         self.root = SceneGraphNode()
-        self.node = SceneGraphNode()
-        self.node.positionOffset = QVector3D(0.0, 0.0, 5.0)
-        self.n2 = SceneGraphNode()
-        self.n2.positionOffset = QVector3D(0.0, 1.5, 0.0)
-        self.n2.rotationAxis = QVector3D(0,0,1)
-        self.node.addChild(self.n2)
-        self.root.addChild(self.node)
+        self.servos['root'] = self.root
+
+        """
+        'Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
+                      'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time'
+                      """
+
+        def addServo(name, parent, servo):
+            self.servos[name] = servo
+            self.servos[parent].addChild(servo)
+
+        addServo('Right Hip', 'root', SceneGraphNode(positionOffset = QVector3D(1,0,0), rotationAxis = QVector3D(1,0,0)))
+        addServo('Right Knee', 'Right Hip', SceneGraphNode(positionOffset = QVector3D(0,-1,0), rotationAxis = QVector3D(1, 0, 0)))
+        addServo('Right Ankle', 'Right Knee', SceneGraphNode(positionOffset = QVector3D(0, -1, 0), rotationAxis = QVector3D(0, 1, 1)))
+        addServo('chest', 'root', SceneGraphNode(positionOffset = QVector3D(0,2,0)))
+
 
     def paintGL(self):
         self.makeCurrent()

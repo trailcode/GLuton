@@ -420,6 +420,7 @@ class ServoAdjustment(QMainWindow):
 
             t = self.timeSlider.value()
 
+            """
             if index == self.names.index('Left Ankle'):
                 #print('Left Ankle', value)
                 self.glutonCanvas.root.angle = value
@@ -429,6 +430,15 @@ class ServoAdjustment(QMainWindow):
                 #print('Left Knee', value)
                 self.glutonCanvas.node.angle = value
                 self.glutonCanvas.glDraw()
+                """
+
+            try:
+
+                self.glutonCanvas.servos[self.names[index]].angle = value
+                self.glutonCanvas.glDraw()
+
+            except:
+                pass
 
             self.servoValueLabels[index].setText(str(value))
             self.animation[t] = []
