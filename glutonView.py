@@ -6,6 +6,7 @@ from OpenGL.GLU import *
 from PyQt4.QtCore import QObject, Qt
 from PyQt4.QtGui import *
 from ArcBall import *
+from SceneGraphNode import SceneGraphNode
 
 PI2 = 2.0*3.1415926535			# 2 * PI (not squared!) 		// PI Squared
 
@@ -50,28 +51,29 @@ class GlutonView(QGLWidget):
 
         self.arcBall = ArcBallT(640, 480)
         self.quadratic = None
+        self.root = SceneGraphNode()
+        self.node = SceneGraphNode()
+        self.node.positionOffset = QVector3D(0.0, 0.0, 5.0)
+        self.n2 = SceneGraphNode()
+        self.n2.positionOffset = QVector3D(0.0, 1.5, 0.0)
+        self.n2.rotationAxis = QVector3D(0,0,1)
+        self.node.addChild(self.n2)
+        self.root.addChild(self.node)
 
     def paintGL(self):
         self.makeCurrent()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  # // Clear Screen And Depth Buffer
         glLoadIdentity();  # // Reset The Current Modelview Matrix
-        glTranslatef(-1.5, 0.0, self.distance);  # // Move Left 1.5 Units And Into The Screen 6.0
-
-        glPushMatrix();  # // NEW: Prepare Dynamic Transform
-        glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
-        glColor3f(0, 0.75, 1.0);
-        #Torus(0.30, 1.00);
-        glutSolidCube(1,1)
-        glPopMatrix();  # // NEW: Unapply Dynamic Transform
 
         glLoadIdentity();  # // Reset The Current Modelview Matrix
-        glTranslatef(1.5, 0.0, self.distance);  # // Move Right 1.5 Units And Into The Screen 7.0
+        glTranslatef(0, 0.0, self.distance);  # // Move Right 1.5 Units And Into The Screen 7.0
 
         glPushMatrix();  # // NEW: Prepare Dynamic Transform
         glMultMatrixf(self.transform);  # // NEW: Apply Dynamic Transform
         glColor3f(1, 0.75, 0.75);
-        gluSphere(self.quadratic, 1.3, 20, 20);
+        #gluSphere(self.quadratic, 1.3, 20, 20);
         #glutSolidCube(1, 1)
+        self.root.render()
         glPopMatrix();  # // NEW: Unapply Dynamic Transform
 
     def resizeGL(self, width, height):

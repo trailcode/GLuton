@@ -90,7 +90,7 @@ class ServoAdjustment(QMainWindow):
 
             self.prevKeyValue = value
             """
-            
+
             """
             min = -1
             max = 1000
@@ -419,6 +419,16 @@ class ServoAdjustment(QMainWindow):
             if self.inTime: return
 
             t = self.timeSlider.value()
+
+            if index == self.names.index('Left Ankle'):
+                #print('Left Ankle', value)
+                self.glutonCanvas.root.angle = value
+                self.glutonCanvas.glDraw()
+
+            if index == self.names.index('Left Knee'):
+                #print('Left Knee', value)
+                self.glutonCanvas.node.angle = value
+                self.glutonCanvas.glDraw()
 
             self.servoValueLabels[index].setText(str(value))
             self.animation[t] = []
