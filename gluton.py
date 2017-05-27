@@ -202,6 +202,7 @@ class ServoAdjustment(QMainWindow):
 
         self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
+        """
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
         self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
@@ -211,6 +212,14 @@ class ServoAdjustment(QMainWindow):
                           124: [84, 76, 54, 95, 54, 69, 120, 68, 115, 39, 160, 49],
                           62: [45, 42, 33, 50, 33, 39, 60, 56, 58, 21, 77, 31],
                           177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
+                          """
+
+        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
+        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
+        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
+                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
+        self.animation = {0: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
+                          256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -222,8 +231,6 @@ class ServoAdjustment(QMainWindow):
 
         for i in range(len(self.mins)): self.servoChanged(i)
 
-        self.servoChanged(0)
-
         def jumpToKey(key):
             self.canvas.closestKey = key
             self.timeSlider.setValue(key)
@@ -232,8 +239,6 @@ class ServoAdjustment(QMainWindow):
         self.ui.pushButtonNextKey.clicked.connect(lambda : jumpToKey(self.getCurrKeyPair(cmp='>')[1]))
 
         self.inTime = False
-
-        for i in range(len(self.servoValueSliders)): self.servoSliderChanged(i, 0)
 
         global gui
         gui = self
@@ -257,6 +262,8 @@ class ServoAdjustment(QMainWindow):
             self.ui.keyValueGrapDockWidget.restoreGeometry(settings.value("keyValueGrapDockWidget"))
 
         except: pass
+
+        self.updateServoSliders()
 
         self.showMaximized()
 
