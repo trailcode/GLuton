@@ -55,7 +55,10 @@ class SceneGraphNode:
         glTranslatef(p.x(), p.y(), p.z())
         glColor4f(1,0.75,0,1)
         mm = QMatrix4x4(self.m)
-        mm.rotate(self.angle, self.rotationAxis.x(), self.rotationAxis.y(), self.rotationAxis.z())
+        axis = self.rotationAxis
+        axis *= self.m
+        mm.rotate(self.angle, axis.x(), axis.y(), axis.z())
+
         glMultMatrixf(mm.transposed().data())
         glutSolidCube(0.2)
         #glutSolidSphere(0.2, 10, 10)

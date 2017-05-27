@@ -240,13 +240,6 @@ class ServoAdjustment(QMainWindow):
         self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
         self.ui.consoleLayout.addWidget(self.pythonshell)
 
-        """
-        file = open('perspective', 'r')
-        self.state = file.read()
-        print(self.state)
-        print('ret', self.restoreState(QByteArray(self.state)))
-        file.close()
-        """
         try:
             #dsads
 
@@ -459,22 +452,20 @@ class ServoAdjustment(QMainWindow):
         self.poses[self.currServo] = v
         self.setServo()
 
-    def setServo(self, i=None, u=None):
-        i = self.currServo
+    def getServoValue(self, i):
         u = self.poses[i]
         o = 0.5 + u + self.offsets[i]
-        #print('o' + str(o))
         u = max(0, min(1.0, o))
-        #v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (1.0 + u) * 0.5
-        #v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * (u) * 0.5
-        v = self.mins[i] + float(self.maxs[i] - self.mins[i]) * u
+        return self.mins[i] + float(self.maxs[i] - self.mins[i]) * u
 
-        try:
-            self.ui.labelServoName.setText(self.names[self.currServo] + ' value: ' + str(int(v)))
-        except:
-            pass
+    def setServo(self, i=None, u=None):
 
-        c = "1 " + str(int(i)) + " " + str(int(v)) + "\r\n"
+        v = self.getServoValue(self.currServo)
+
+        try: self.ui.labelServoName.setText(self.names[self.currServo] + ' value: ' + str(int(v)))
+        except: pass
+
+        c = "1 " + str(int(self.currServo)) + " " + str(int(v)) + "\r\n"
         #print(c)
 
         """
