@@ -56,7 +56,7 @@ class ServoAdjustment(QMainWindow):
 
         self.background_pixmap = QPixmap('logo.png')
         self.inServoSliderChange = False
-
+        self.prevKeyValue = None
         def save():
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
@@ -67,6 +67,52 @@ class ServoAdjustment(QMainWindow):
 
         def keyPosChanged(value):
             if self.inServoSliderChange: return
+
+            """
+            if self.prevKeyValue is not None:
+                if self.prevKeyValue > value:
+                    min = value - 3
+                    max = self.prevKeyValue + 3
+                else:
+                    min = self.prevKeyValue - 3
+                    max = value + 3
+
+                #print('min', min, 'max', max)
+
+                for key in self.animation.keys():
+                    #print('  key', key)
+                    if key > min and key < max:
+                        self.inServoSliderChange = True
+                        self.ui.keyPosSlider.setValue(self.prevKeyValue)
+                        self.inServoSliderChange = False
+                        print('ret')
+                        return
+
+            self.prevKeyValue = value
+            """
+            
+            """
+            min = -1
+            max = 1000
+            for key in self.animation.keys():
+                if key < self.canvas.closestKey and key > min: min = key
+                if key > self.canvas.closestKey and key < max: max = key
+
+            minSpace = 3
+
+            if value <= min + minSpace:
+                value = min + minSpace
+                self.inServoSliderChange = True
+                #self.ui.keyPosSlider.setValue(value)
+                self.inServoSliderChange = False
+            elif value >= max - minSpace:
+                value = max - minSpace
+                self.inServoSliderChange = True
+                #self.ui.keyPosSlider.setValue(value)
+                self.inServoSliderChange = False
+                """
+
+
             self.animation[value] = self.animation.pop(self.canvas.closestKey)
             self.canvas.glDraw()
             self.updateServoSliders()
@@ -357,6 +403,8 @@ class ServoAdjustment(QMainWindow):
             self.inServoSliderChange = True
 
             self.ui.keyPosSlider.setValue(self.canvas.closestKey)
+
+            self.prevKeyValue = self.canvas.closestKey
 
             self.inServoSliderChange = False
 
