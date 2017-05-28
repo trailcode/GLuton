@@ -252,7 +252,7 @@ class ServoAdjustment(QMainWindow):
         self.updateServoSliders()
 
         self.timer = QTimer()
-        self.timer.timeout.connect(lambda : self.timeSlider.setValue((self.timeSlider.value() + 1) % self.timeSlider.maximum()))
+        self.timer.timeout.connect(lambda : self.timeSlider.setValue((self.timeSlider.value() + self.ui.stepSpinBox.value()) % self.timeSlider.maximum()))
 
         self.playing = False
         def playPause():
@@ -260,12 +260,14 @@ class ServoAdjustment(QMainWindow):
                 self.timer.stop()
                 self.ui.playButton.setText(">")
             else:
-                self.timer.start(10)
+                self.timer.start(self.ui.intervalSpinBox.value())
                 self.ui.playButton.setText("||")
             self.playing = not self.playing
 
 
         self.ui.playButton.clicked.connect(playPause)
+
+        self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
 
         self.copyBuffer = None
         def copy():
