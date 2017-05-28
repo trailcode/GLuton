@@ -83,6 +83,7 @@ class GlutonView(QGLWidget):
 
     def paintGL(self):
         self.makeCurrent()
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
 
@@ -93,6 +94,7 @@ class GlutonView(QGLWidget):
         glMultMatrixf(self.transform)
         self.drawGroundGrid()
         glColor3f(1, 0.75, 0.75)
+        self.root.updatePosition()
         self.root.render()
         glPopMatrix()
 

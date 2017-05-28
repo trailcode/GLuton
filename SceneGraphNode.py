@@ -29,15 +29,15 @@ class SceneGraphNode:
         self.children += [child]
         child.parent = self
 
-    def render(self):
+    def updatePosition(self):
 
         if self.parent is None:
-            parentPos = QVector3D(0.0, 0.0, 0.0)
+            self.parentPos = QVector3D(0.0, 0.0, 0.0)
             parentM = QMatrix4x4()
             parentAngle = 0
             rotationAxis = QVector3D(0,0,0)
         else:
-            parentPos = self.parent.getPosition()
+            self.parentPos = self.parent.getPosition()
             parentM = self.parent.m
             parentAngle = self.parent.angle
             rotationAxis = self.parent.rotationAxis
@@ -49,28 +49,33 @@ class SceneGraphNode:
         self.m.rotate(parentAngle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z())
         self.m = self.m * parentM
         p *= self.m
-        p += parentPos
+        p += self.parentPos
+        self.mm = QMatrix4x4(self.m)
+        axis = self.rotationAxis
+        axis *= self.m
+        self.mm.rotate(self.angle, axis.x(), axis.y(), axis.z())
+        self.mm = self.mm.transposed()
+        self.position = p
+
+        for child in self.children: child.updatePosition()
+
+    def render(self):
         glDisable(GL_LIGHTING)
-        glColor4f(0,1,0.75,1)
+        glColor4f(0, 1, 0.75, 1)
         glLineWidth(3)
         glBegin(GL_LINES)
-        glVertex3f(parentPos.x(), parentPos.y(), parentPos.z())
-        glVertex3f(p.x(), p.y(), p.z())
+        glVertex3f(self.parentPos.x(), self.parentPos.y(), self.parentPos.z())
+        glVertex3f(self.position.x(), self.position.y(), self.position.z())
         glEnd()
         glEnable(GL_LIGHTING)
         glPushMatrix()
-        glTranslatef(p.x(), p.y(), p.z())
+        glTranslatef(self.position.x(), self.position.y(), self.position.z())
         glColor4f(self.color[0], self.color[1], self.color[2], 1)
-        mm = QMatrix4x4(self.m)
-        axis = self.rotationAxis
-        axis *= self.m
-        mm.rotate(self.angle, axis.x(), axis.y(), axis.z())
-
-        glMultMatrixf(mm.transposed().data())
+        glMultMatrixf(self.mm.data())
         glutSolidCube(0.2)
-        #glutSolidSphere(0.2, 10, 10)
+        # glutSolidSphere(0.2, 10, 10)
         glPopMatrix()
-        self.position = p
 
         for child in self.children: child.render()
+
 
