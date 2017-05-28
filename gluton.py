@@ -78,10 +78,16 @@ class ServoAdjustment(QMainWindow):
 
         def keyPosChanged(value):
             if self.settingKeyPos: return
-
-            self.animation[value] = self.animation.pop(self.canvas.closestKey)
+            if value == self.canvas.closestKey:
+                print('Same')
+                return
+            try: curr = self.animation.pop(self.canvas.closestKey)
+            except:
+                print('Error')
+                return
+            self.animation[value] = curr.copy()
             self.canvas.glDraw()
-            self.updateServoSliders()
+            self.timeSlider.setValue(value)
 
         self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
 
@@ -209,15 +215,14 @@ class ServoAdjustment(QMainWindow):
                           95: [128, 104, 91, 128, 128, 128, 127, 73, 184, 128, 128, 128]} # 1D
 
         self.animation = {0: [128, 128, 161, 128, 128, 128, 127, 128, 93, 128, 128, 128],
-                          256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
-                          115: [128, 12, 136, 128, 128, 128, 127, 126, 124, 128, 128, 128],
-                          171: [128, 128, 170, 128, 128, 128, 127, 126, 84, 128, 128, 128],
-                          22: [128, 54, 179, 128, 128, 128, 127, 90, 96, 128, 128, 128],
-                          140: [128, 26, 217, 128, 128, 128, 127, 126, 97, 128, 128, 128],
-                          42: [128, 125, 119, 128, 128, 128, 127, 21, 162, 128, 128, 128],
+                          256: [128, 128, 170, 128, 128, 128, 128, 128, 84, 128, 128, 128],
                           75: [128, 126, 85, 128, 128, 128, 127, 128, 169, 128, 128, 128],
-                          60: [127, 125, 93, 127, 127, 127, 127, 19, 232, 127, 127, 127],
-                          95: [128, 104, 91, 128, 128, 128, 127, 73, 184, 128, 128, 128]} # Spline
+                          205: [128, 26, 217, 128, 128, 128, 127, 126, 97, 128, 128, 128],
+                          22: [128, 54, 179, 128, 128, 128, 127, 90, 96, 128, 128, 128],
+                          159: [128, 12, 136, 128, 128, 128, 127, 126, 124, 128, 128, 128],
+                          42: [128, 125, 119, 128, 128, 128, 127, 21, 162, 128, 128, 128],
+                          110: [128, 104, 91, 128, 128, 128, 127, 73, 184, 128, 128, 128],
+                          60: [127, 125, 93, 127, 127, 127, 127, 19, 232, 127, 127, 127]}
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
