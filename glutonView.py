@@ -90,6 +90,8 @@ class GlutonView(QGLWidget):
         addServo('Right Foot',      'Right Ankle',      SceneGraphNode(QVector3D(0.3, 0, 0),  QVector3D(1, 0, 0), [1,0.45,0,1]))
         addServo('Left Foot',       'Left Ankle',       SceneGraphNode(QVector3D(-0.3, 0, 0), QVector3D(1, 0, 0), [0,0.45,1]))
 
+        self.rightFootPoints = []
+        self.leftFootPoints = []
 
     def paintGL(self):
         self.makeCurrent()
@@ -108,44 +110,67 @@ class GlutonView(QGLWidget):
         self.root.updatePosition()
         A = self.servos['Right Ankle'].position
         B = self.servos['Left Ankle'].position
+
         glPushMatrix()
         if A.y() > B.y():
-            glTranslatef(0, -B.y() + 0.1, 0)
+            heightDiff = -B.y() + 0.1
             diff = A.y() - B.y()
             self.servos['Right Foot'].color = [1, 0.45, 0]
             self.servos['Left Foot'].color = [1, 1, 1]
             self.servos['Right Ankle'].color = [1, 0.45, 0]
             self.servos['Left Ankle'].color = [1, 1, 1]
 
-            #self.lastRightFootPos = 0
-            #self.lastLeftFootPos = 0
-
-            self.gridTranslation[1] += B.z() - self.lastLeftFootPos
+            delta = B.z() - self.lastLeftFootPos
 
             self.lastLeftFootPos = B.z()
 
         else:
-            glTranslatef(0, -A.y() + 0.1, 0)
+            heightDiff = -A.y() + 0.1
             diff = B.y() - A.y()
             self.servos['Right Foot'].color = [1, 1, 1]
             self.servos['Left Foot'].color = [0, 0.45, 1]
             self.servos['Right Ankle'].color = [1, 1, 1]
             self.servos['Left Ankle'].color = [0, 0.45, 1]
 
-            self.gridTranslation[1] += A.z() - self.lastRightFootPos
+            delta = A.z() - self.lastRightFootPos
 
             self.lastRightFootPos = A.z()
 
+        glTranslatef(0, heightDiff, 0)
+
         self.root.render()
         glPopMatrix()
+        if delta < 0: self.gridTranslation[1] += delta
+        else:
+            #print('delta', delta)
+            pass
         glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
         self.drawGroundGrid()
+
+        self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1])]
+        self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1])]
+
+        glColor3f(1, 0, 0)
+        glBegin(GL_LINE_STRIP)
+        for p in self.rightFootPoints: glVertex3f(p[0], p[1], p[2])
+        glEnd()
+
+        glColor3f(0, 1, 1)
+        glBegin(GL_LINE_STRIP)
+        for p in self.leftFootPoints: glVertex3f(p[0], p[1], p[2])
+        glEnd()
+
         glPopMatrix()
 
         if diff < 0.001:    glColor3f(1,0,0)
         else:               glColor3f(1,1,0)
 
-        self.renderText(10, self.height() - 15, "{0:.4f}".format(diff) + " pos: " + "{0:.4f}".format(self.gridTranslation[1]), self.font())
+        self.renderText(10,
+                        self.height() - 15,
+                        "{0:.4f}".format(diff) +
+                        " pos: " + "{0:.4f}".format(self.gridTranslation[1]) +
+                        " delta: " + "{0:.4f}".format(delta),
+                        self.font())
 
     def drawGroundGrid(self):
         glDisable(GL_LIGHTING)
