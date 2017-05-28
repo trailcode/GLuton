@@ -193,7 +193,7 @@ class ServoAdjustment(QMainWindow):
                         0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
 
         self.animation = {0: [127, 126, 159, 89, 127, 127, 125, 126, 91, 165, 127, 127],
-                          256: [128, 128, 160, 128, 128, 128, 128, 128, 86, 128, 128, 128],
+                          256: [127, 126, 159, 89, 127, 127, 125, 126, 91, 165, 127, 127],
                           226: [126, 62, 206, 85, 126, 126, 124, 125, 86, 161, 126, 126],
                           42: [128, 124, 119, 142, 128, 128, 127, 21, 162, 110, 128, 128],
                           75: [128, 126, 85, 162, 128, 128, 126, 128, 169, 89, 128, 128],
@@ -250,15 +250,34 @@ class ServoAdjustment(QMainWindow):
 
         self.updateServoSliders()
 
-        def advanceTime():
-
-            self.timeSlider.setValue((self.timeSlider.value() + 3) % self.timeSlider.maximum())
-
         self.timer = QTimer()
-        self.timer.timeout.connect(advanceTime)
-        #self.timer.start(500)
+        self.timer.timeout.connect(lambda : self.timeSlider.setValue((self.timeSlider.value() + 1) % self.timeSlider.maximum()))
 
-        self.ui.playButton.clicked.connect(lambda : self.timer.start(10))
+        self.playing = False
+        def playPause():
+            if self.playing:
+                self.timer.stop()
+                self.ui.playButton.setText(">")
+            else:
+                self.timer.start(10)
+                self.ui.playButton.setText("||")
+            self.playing = not self.playing
+
+
+        self.ui.playButton.clicked.connect(playPause)
+
+        self.copyBuffer = None
+        def copy():
+            self.copyBuffer = []
+            for slider in self.sliders: self.copyBuffer += [slider.value()]
+
+        self.ui.copyButton.clicked.connect(copy)
+
+        def paste():
+            if self.copyBuffer is None: return
+            for i in range(len(self.copyBuffer)): self.sliders[i].setValue(self.copyBuffer[i])
+
+        self.ui.pasteButton.clicked.connect(paste)
 
         self.showMaximized()
 
