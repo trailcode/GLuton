@@ -145,7 +145,7 @@ class GlutonView(QGLWidget):
         if diff < 0.001:    glColor3f(1,0,0)
         else:               glColor3f(1,1,0)
 
-        self.renderText(10, self.height() - 15, "{0:.4f}".format(diff), self.font())
+        self.renderText(10, self.height() - 15, "{0:.4f}".format(diff) + " pos: " + "{0:.4f}".format(self.gridTranslation[1]), self.font())
 
     def drawGroundGrid(self):
         glDisable(GL_LIGHTING)

@@ -381,8 +381,15 @@
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
-       <item>
-        <widget class="QComboBox" name="interpolationComboBox"/>
+       <item alignment="Qt::AlignVCenter">
+        <widget class="QComboBox" name="interpolationComboBox">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertAlphabetically</enum>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButtonPrevKey">
@@ -417,8 +424,17 @@
            <height>15</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>20</height>
+          </size>
+         </property>
          <property name="text">
           <string>Key: 0</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -452,11 +468,36 @@
          <property name="maximumSize">
           <size>
            <width>30</width>
-           <height>16777215</height>
+           <height>20</height>
           </size>
          </property>
          <property name="text">
           <string>Del</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="copyPrevKeyButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>10000</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Copy Prev</string>
          </property>
         </widget>
        </item>
@@ -473,8 +514,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
-           <height>20</height>
+           <width>31</width>
+           <height>17</height>
           </size>
          </property>
         </spacer>

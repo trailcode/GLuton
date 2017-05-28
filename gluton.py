@@ -57,7 +57,7 @@ class ServoAdjustment(QMainWindow):
         self.background_pixmap = QPixmap('logo.png')
         self.settingKeyPos = False
         self.inServoOrTimeSliderChange = False
-        self.prevKeyValue = None
+        self.closestKeyValue = None
         def save():
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
@@ -66,53 +66,18 @@ class ServoAdjustment(QMainWindow):
 
         self.ui.actionSave.triggered.connect(save)
 
+        def copyPrevKey():
+            pair = self.getCurrKeyPair()
+            if pair is None: return
+            ani = self.animation[pair[0]]
+            for i in range(len(ani)):
+                self.servoValueSliders[i].setValue(ani[i])
+
+
+        self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
+
         def keyPosChanged(value):
             if self.settingKeyPos: return
-
-            """
-            if self.prevKeyValue is not None:
-                if self.prevKeyValue > value:
-                    min = value - 3
-                    max = self.prevKeyValue + 3
-                else:
-                    min = self.prevKeyValue - 3
-                    max = value + 3
-
-                #print('min', min, 'max', max)
-
-                for key in self.animation.keys():
-                    #print('  key', key)
-                    if key > min and key < max:
-                        self.inServoSliderChange = True
-                        self.ui.keyPosSlider.setValue(self.prevKeyValue)
-                        self.inServoSliderChange = False
-                        print('ret')
-                        return
-
-            self.prevKeyValue = value
-            """
-
-            """
-            min = -1
-            max = 1000
-            for key in self.animation.keys():
-                if key < self.canvas.closestKey and key > min: min = key
-                if key > self.canvas.closestKey and key < max: max = key
-
-            minSpace = 3
-
-            if value <= min + minSpace:
-                value = min + minSpace
-                self.inServoSliderChange = True
-                #self.ui.keyPosSlider.setValue(value)
-                self.inServoSliderChange = False
-            elif value >= max - minSpace:
-                value = max - minSpace
-                self.inServoSliderChange = True
-                #self.ui.keyPosSlider.setValue(value)
-                self.inServoSliderChange = False
-                """
-
 
             self.animation[value] = self.animation.pop(self.canvas.closestKey)
             self.canvas.glDraw()
@@ -231,6 +196,28 @@ class ServoAdjustment(QMainWindow):
                           256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
                           52: [128, 167, 91, 128, 128, 128, 127, 79, 173, 128, 128, 128],
                           21: [128, 146, 107, 128, 128, 128, 127, 89, 157, 128, 128, 128]}
+
+        self.animation = {0: [128, 128, 161, 128, 128, 128, 127, 128, 93, 128, 128, 128],
+                          256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
+                          115: [128, 12, 136, 128, 128, 128, 127, 126, 124, 128, 128, 128],
+                          171: [128, 128, 170, 128, 128, 128, 127, 126, 84, 128, 128, 128],
+                          22: [128, 54, 179, 128, 128, 128, 127, 90, 96, 128, 128, 128],
+                          140: [128, 0, 217, 128, 128, 128, 127, 126, 111, 128, 128, 128],
+                          42: [128, 126, 131, 128, 128, 128, 127, 21, 162, 128, 128, 128],
+                          75: [128, 126, 87, 128, 128, 128, 127, 128, 169, 128, 128, 128],
+                          60: [128, 126, 93, 128, 128, 128, 127, 0, 226, 128, 128, 128],
+                          95: [128, 104, 91, 128, 128, 128, 127, 73, 184, 128, 128, 128]} # 1D
+
+        self.animation = {0: [128, 128, 161, 128, 128, 128, 127, 128, 93, 128, 128, 128],
+                          256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
+                          115: [128, 12, 136, 128, 128, 128, 127, 126, 124, 128, 128, 128],
+                          171: [128, 128, 170, 128, 128, 128, 127, 126, 84, 128, 128, 128],
+                          22: [128, 54, 179, 128, 128, 128, 127, 90, 96, 128, 128, 128],
+                          140: [128, 26, 217, 128, 128, 128, 127, 126, 97, 128, 128, 128],
+                          42: [128, 125, 119, 128, 128, 128, 127, 21, 162, 128, 128, 128],
+                          75: [128, 126, 85, 128, 128, 128, 127, 128, 169, 128, 128, 128],
+                          60: [127, 125, 93, 127, 127, 127, 127, 19, 232, 127, 127, 127],
+                          95: [128, 104, 91, 128, 128, 128, 127, 73, 184, 128, 128, 128]} # Spline
 
         self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
         self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
@@ -399,7 +386,7 @@ class ServoAdjustment(QMainWindow):
 
             self.ui.keyPosSlider.setValue(self.canvas.closestKey)
 
-            self.prevKeyValue = self.canvas.closestKey
+            self.closestKeyValue = self.canvas.closestKey
 
             self.settingKeyPos = False
 
