@@ -58,6 +58,7 @@ class ServoAdjustment(QMainWindow):
         self.settingKeyPos = False
         self.inServoOrTimeSliderChange = False
         self.closestKeyValue = None
+        self.allowGlutonCanvasRedraw = True
         def save():
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
@@ -408,7 +409,13 @@ class ServoAdjustment(QMainWindow):
 
             self.ui.labelKey.setText('Key: ' + str(self.getCurrKeyPair(justIndex = True)))
 
+            self.allowGlutonCanvasRedraw = False
+
             self.updateServoSliders()
+
+            self.glutonCanvas.glDraw()
+
+            self.allowGlutonCanvasRedraw = True
 
         else:
 
@@ -416,7 +423,7 @@ class ServoAdjustment(QMainWindow):
                 v= self.getServoValue(index, value / 255.0) / 700.0 * 360.0
                 #self.glutonCanvas.servos[self.names[index]].setAngle(v)
                 self.glutonCanvas.servos[self.names[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
-                self.glutonCanvas.glDraw() # Redrawing more then required
+                if self.allowGlutonCanvasRedraw: self.glutonCanvas.glDraw()
 
             except:
                 pass
