@@ -105,7 +105,7 @@ class ServoAdjustment(QMainWindow):
         self.ui.interpolationComboBox.activated.connect(setMode)
 
         for i,index in zip(self.names, range(0, len(self.names))):
-            exec('ServoAdjustment.f' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
+            exec('ServoAdjustment.servoSliderChanged' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
             label = QLabel()
             label.setText(i + ':')
             label.setFixedWidth(100)
@@ -144,7 +144,7 @@ class ServoAdjustment(QMainWindow):
 
             global _self
             _self = self
-            exec('slider.valueChanged.connect(lambda x: _self.f' + str(index) + '(x))')
+            exec('slider.valueChanged.connect(lambda x: _self.servoSliderChanged' + str(index) + '(x))')
 
             box = QHBoxLayout()
             box.addWidget(label)
@@ -415,7 +415,7 @@ class ServoAdjustment(QMainWindow):
 
             self.glutonCanvas.glDraw()
 
-            self.allowGlutonCanvasRedraw = True
+            self.canvas.glDraw()
 
         else:
 
@@ -446,9 +446,9 @@ class ServoAdjustment(QMainWindow):
 
         self.inServoOrTimeSliderChange = False
 
-        self.canvas.paintGL()
-        self.canvas.swapBuffers()
-        self.canvas.repaint()
+        if self.allowGlutonCanvasRedraw : self.canvas.glDraw()
+
+        self.allowGlutonCanvasRedraw = True
 
     def minChanged(self, value):
         self.ui.labelMin.setText('Min: ' + str(value))
