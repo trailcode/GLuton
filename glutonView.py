@@ -97,10 +97,19 @@ class GlutonView(QGLWidget):
         self.root.updatePosition()
         A = self.servos['Right Ankle'].position.y()
         B = self.servos['Left Ankle'].position.y()
-        if A > B: glTranslatef(0, -B, 0)
-        else:     glTranslatef(0, -A, 0)
+        if A > B:
+            glTranslatef(0, -B, 0)
+            diff = A - B
+        else:
+            glTranslatef(0, -A, 0)
+            diff = B - A
         self.root.render()
         glPopMatrix()
+
+        if diff < 0.001:    glColor3f(1,0,0)
+        else:               glColor3f(1,1,0)
+        
+        self.renderText(10, self.height() - 15, "{0:.4f}".format(diff), self.font())
 
     def drawGroundGrid(self):
         glDisable(GL_LIGHTING)
