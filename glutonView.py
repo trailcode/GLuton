@@ -57,10 +57,15 @@ class GlutonView(QGLWidget):
         self.arcBall = ArcBallT(640, 480)
         self.quadratic = None
 
+        self.gridTranslation = [0,0]
+
         self.servos = {}
 
         self.root = SceneGraphNode()
         self.servos['root'] = self.root
+
+        self.lastRightFootPos = 0
+        self.lastLeftFootPos = 0
 
         def addServo(name, parent, servo):
             self.servos[name] = servo
@@ -100,27 +105,41 @@ class GlutonView(QGLWidget):
 
         glPushMatrix()
         glMultMatrixf(self.transform)
-        self.drawGroundGrid()
-        glColor3f(1, 0.75, 0.75)
         self.root.updatePosition()
-        A = self.servos['Right Ankle'].position.y()
-        B = self.servos['Left Ankle'].position.y()
-        if A > B:
-            glTranslatef(0, -B + 0.1, 0)
-            diff = A - B
+        A = self.servos['Right Ankle'].position
+        B = self.servos['Left Ankle'].position
+        glPushMatrix()
+        if A.y() > B.y():
+            glTranslatef(0, -B.y() + 0.1, 0)
+            diff = A.y() - B.y()
             self.servos['Right Foot'].color = [1, 0.45, 0]
             self.servos['Left Foot'].color = [1, 1, 1]
             self.servos['Right Ankle'].color = [1, 0.45, 0]
             self.servos['Left Ankle'].color = [1, 1, 1]
+
+            #self.lastRightFootPos = 0
+            #self.lastLeftFootPos = 0
+
+            self.gridTranslation[1] += B.z() - self.lastLeftFootPos
+
+            self.lastLeftFootPos = B.z()
+
         else:
-            glTranslatef(0, -A + 0.1, 0)
-            diff = B - A
+            glTranslatef(0, -A.y() + 0.1, 0)
+            diff = B.y() - A.y()
             self.servos['Right Foot'].color = [1, 1, 1]
             self.servos['Left Foot'].color = [0, 0.45, 1]
             self.servos['Right Ankle'].color = [1, 1, 1]
             self.servos['Left Ankle'].color = [0, 0.45, 1]
 
+            self.gridTranslation[1] += A.z() - self.lastRightFootPos
+
+            self.lastRightFootPos = A.z()
+
         self.root.render()
+        glPopMatrix()
+        glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
+        self.drawGroundGrid()
         glPopMatrix()
 
         if diff < 0.001:    glColor3f(1,0,0)
