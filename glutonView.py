@@ -38,8 +38,13 @@ def Torus(MinorRadius, MajorRadius):
 
 
 class GlutonView(QGLWidget):
+
     def __init__(self, servoAdjustment, parent = None):
-        super(GlutonView, self).__init__(parent)
+        fmt = QGLFormat()
+        fmt.setSampleBuffers(True)  # antialiasing
+
+        super(GlutonView, self).__init__(fmt, parent)
+
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
@@ -85,7 +90,10 @@ class GlutonView(QGLWidget):
         self.makeCurrent()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glLoadIdentity()
+
+        glEnable(GL_BLEND)
+        glEnable(GL_LINE_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
 
         glLoadIdentity()
         glTranslatef(0, 0.0, self.distance)
@@ -108,7 +116,7 @@ class GlutonView(QGLWidget):
 
         if diff < 0.001:    glColor3f(1,0,0)
         else:               glColor3f(1,1,0)
-        
+
         self.renderText(10, self.height() - 15, "{0:.4f}".format(diff), self.font())
 
     def drawGroundGrid(self):

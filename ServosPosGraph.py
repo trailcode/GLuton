@@ -9,7 +9,9 @@ import numpy as np
 
 class ServosPosGraph(QGLWidget):
     def __init__(self, servoAdjustment, parent = None):
-        super(ServosPosGraph, self).__init__(parent)
+        fmt = QGLFormat()
+        fmt.setSampleBuffers(True)  # antialiasing
+        super(ServosPosGraph, self).__init__(fmt, parent)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
