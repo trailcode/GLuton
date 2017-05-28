@@ -106,11 +106,20 @@ class GlutonView(QGLWidget):
         A = self.servos['Right Ankle'].position.y()
         B = self.servos['Left Ankle'].position.y()
         if A > B:
-            glTranslatef(0, -B, 0)
+            glTranslatef(0, -B + 0.1, 0)
             diff = A - B
+            self.servos['Right Foot'].color = [1, 0.45, 0]
+            self.servos['Left Foot'].color = [1, 1, 1]
+            self.servos['Right Ankle'].color = [1, 0.45, 0]
+            self.servos['Left Ankle'].color = [1, 1, 1]
         else:
-            glTranslatef(0, -A, 0)
+            glTranslatef(0, -A + 0.1, 0)
             diff = B - A
+            self.servos['Right Foot'].color = [1, 1, 1]
+            self.servos['Left Foot'].color = [0, 0.45, 1]
+            self.servos['Right Ankle'].color = [1, 1, 1]
+            self.servos['Left Ankle'].color = [0, 0.45, 1]
+
         self.root.render()
         glPopMatrix()
 
