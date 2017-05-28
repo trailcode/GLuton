@@ -95,6 +95,10 @@ class GlutonView(QGLWidget):
         self.drawGroundGrid()
         glColor3f(1, 0.75, 0.75)
         self.root.updatePosition()
+        A = self.servos['Right Ankle'].position.y()
+        B = self.servos['Left Ankle'].position.y()
+        if A > B: glTranslatef(0, -B, 0)
+        else:     glTranslatef(0, -A, 0)
         self.root.render()
         glPopMatrix()
 
@@ -103,7 +107,7 @@ class GlutonView(QGLWidget):
         glColor3f(0,0.7,.3)
         glLineWidth(1)
         glBegin(GL_LINES)
-        size = 10
+        size = 100
         for i in range(-size, size + 1):
             glVertex3f(i, 0, size)
             glVertex3f(i, 0, -size)
