@@ -48,8 +48,6 @@ class GLuton(QMainWindow):
         self.ui.show()
 
         self.setWindowTitle('Gluton')
-
-        self.ui.spinBoxServo.valueChanged.connect(self.servoChanged)
         self.sliders = []
         self.canvas = ServosPosGraph(self)
         self.ui.canvasLayout.addWidget(self.canvas)
@@ -68,6 +66,9 @@ class GLuton(QMainWindow):
         """The index of the slider currently being edited or having the mouse over the key value slider"""
         self.servoPositionSliders = []
         self.servoPosGraphShowServo = []
+        self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
+                           'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
+                           'time']
 
         def save():
             print('  self.mins =', self.mins)
@@ -76,9 +77,6 @@ class GLuton(QMainWindow):
             print('  self.animation =', self.animation)
 
         self.ui.actionSave.triggered.connect(save)
-
-        self.servoNames = [ 'Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
-                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
         for i in self.servoNames: self.servoPosGraphShowServo += [True]
 
@@ -179,31 +177,10 @@ class GLuton(QMainWindow):
                           60: [127, 125, 93, 162, 127, 127, 127, 19, 232, 89, 127, 127],
                           159: [128, 11, 136, 128, 128, 128, 127, 125, 109, 128, 128, 128]}
 
-        for i in range(len(self.mins)): self.servoChanged(i)
-
-        self.servoChanged(0)
-
         global gui
         gui = self
         self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
         self.ui.consoleLayout.addWidget(self.pythonshell)
-
-        try:
-
-            UI_VERSION = 1
-            programname = os.path.basename(__file__)
-            programbase, ext = os.path.splitext(programname)
-
-            print(programbase)
-
-            settings = QSettings("company", programbase)  # http://pyqt.sourceforge.net/Docs/PyQt4/pyqt_qsettings.html
-
-            #self.restoreGeometry(settings.value("geometryMain"))
-            self.ui.restoreGeometry(settings.value("geometry"))
-            self.ui.restoreState(settings.value("state"), UI_VERSION)
-            self.ui.keyValueGrapDockWidget.restoreGeometry(settings.value("keyValueGrapDockWidget"))
-
-        except: pass
 
         self.setupKeyManagementEvents()
 
@@ -215,9 +192,41 @@ class GLuton(QMainWindow):
 
         self.setupInterpolationEvents()
 
+        try:
+
+            UI_VERSION = 1
+            programname = os.path.basename(__file__)
+            programbase, ext = os.path.splitext(programname)
+
+            print(programbase)
+
+            settings = QSettings("company", programbase)  # http://pyqt.sourceforge.net/Docs/PyQt4/pyqt_qsettings.html
+
+            # self.restoreGeometry(settings.value("geometryMain"))
+            self.ui.restoreGeometry(settings.value("geometry"))
+            self.ui.restoreState(settings.value("state"), UI_VERSION)
+            self.ui.keyValueGrapDockWidget.restoreGeometry(settings.value("keyValueGrapDockWidget"))
+
+        except:
+            pass
+
         self.showMaximized()
 
     def setupServoAdjustmentEvents(self):
+
+        def servoChanged(value):
+            self.currServo = value
+            self.ui.horizontalSliderMin.setValue(self.mins[value])
+            self.ui.horizontalSliderMax.setValue(self.maxs[value])
+            self.ui.horizontalSliderOffset.setValue(int((float(self.offsets[self.currServo]) + 0.5) * float(self.ui.horizontalSliderOffset.maximum())))
+            self.ui.horizontalSliderPos.setValue((self.poses[self.currServo] + 0.5) * float(self.ui.horizontalSliderPos.maximum()))
+            self.setServo()
+
+        self.ui.spinBoxServo.valueChanged.connect(servoChanged)
+
+        for i in range(len(self.mins)): servoChanged(i)
+
+        servoChanged(0)
 
         def minChanged(value):
             self.ui.labelMin.setText('Min: ' + str(value))
@@ -330,10 +339,6 @@ class GLuton(QMainWindow):
             self.canvas.glDraw()
 
         self.ui.interpolationComboBox.activated.connect(setMode)
-
-    def customEvent(self, event):
-        # process idle_queue_dispatcher events
-        event.callback()
 
     def closeEvent(self, event):
         """
@@ -490,15 +495,6 @@ class GLuton(QMainWindow):
         if self.allowGlutonCanvasRedraw : self.canvas.glDraw()
 
         self.allowGlutonCanvasRedraw = True
-
-    def servoChanged(self, value):
-        #print('Servo ', value)
-        self.currServo = value
-        self.ui.horizontalSliderMin.setValue(self.mins[value])
-        self.ui.horizontalSliderMax.setValue(self.maxs[value])
-        self.ui.horizontalSliderOffset.setValue(int((float(self.offsets[self.currServo]) + 0.5) * float(self.ui.horizontalSliderOffset.maximum())))
-        self.ui.horizontalSliderPos.setValue((self.poses[self.currServo] + 0.5) * float(self.ui.horizontalSliderPos.maximum()))
-        self.setServo()
 
     def getServoValue(self, i, u):
         o = 0.5 + u + self.offsets[i]
