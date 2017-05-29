@@ -63,6 +63,11 @@ class GLuton(QMainWindow):
         self.inTime = False
         self.copyBuffer = None
         self.playing = False
+        self.interpolationMode = 0
+        self.currBeingEdited = 0
+        """The index of the slider currently being edited or having the mouse over the key value slider"""
+        self.servoPositionSliders = []
+        self.servoPosGraphShowServo = []
 
         def save():
             print('  self.mins =', self.mins)
@@ -75,24 +80,7 @@ class GLuton(QMainWindow):
         self.servoNames = [ 'Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                             'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
-        self.servoPosGraphShowServo = []
-
         for i in self.servoNames: self.servoPosGraphShowServo += [True]
-
-        self.interpolationMode = 0
-        self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', 'Interpolated Univariate Spline', '1D'])
-
-        def setMode(mode):
-            self.interpolationMode = mode
-            self.glutonCanvas.glDraw()
-            self.canvas.glDraw()
-
-        self.ui.interpolationComboBox.activated.connect(setMode)
-
-        self.currBeingEdited = 0
-        """The index of the slider currently being edited or having the mouse over the key value slider"""
-
-        self.servoPositionSliders = []
 
         # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
         for i,index in zip(self.servoNames, range(0, len(self.servoNames))):
@@ -225,6 +213,8 @@ class GLuton(QMainWindow):
 
         self.setupPlayAnimationEvents()
 
+        self.setupInterpolationEvents()
+
         self.showMaximized()
 
     def setupServoAdjustmentEvents(self):
@@ -329,6 +319,17 @@ class GLuton(QMainWindow):
         self.ui.playButton.clicked.connect(playPause)
 
         self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
+
+    def setupInterpolationEvents(self):
+
+        self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', 'Interpolated Univariate Spline', '1D'])
+
+        def setMode(mode):
+            self.interpolationMode = mode
+            self.glutonCanvas.glDraw()
+            self.canvas.glDraw()
+
+        self.ui.interpolationComboBox.activated.connect(setMode)
 
     def customEvent(self, event):
         # process idle_queue_dispatcher events
