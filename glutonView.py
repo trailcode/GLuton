@@ -231,6 +231,7 @@ class GlutonView(QGLWidget):
         self.thisRot = Matrix3fSetRotationFromQuat4f(ThisQuat)  # // Convert Quaternion Into Matrix3fT
         # Use correct Linear Algebra matrix multiplication C = A * B
         self.thisRot = Matrix3fMulMatrix3f(self.lastRot, self.thisRot)  # // Accumulate Last Rotation Into This One
+
         self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
                                                          self.thisRot)  # // Set Our Final Transform's Rotation From This One
         self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
@@ -269,45 +270,46 @@ class GlutonView(QGLWidget):
         self.arcBall.click(mouse_pt)  # // Update Start Vector And Prepare For Dragging
         if moda & Qt.ShiftModifier : self.doRotate(x, y + delta)
         elif moda & Qt.AltModifier: self.doRotate(x + delta, y)
-        else: self.distance += delta * 0.10
+        else:
+            self.distance += delta * 0.05
+            if self.distance > -2: self.distance = -2
 
+        self.glDraw()
+
+    def setRotation(self, rotation):
+
+        self.thisRot = np.array(rotation, dtype=np.float32)
+
+        # Set Our Final Transform's Rotation From This One
+        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
+                                                         self.thisRot)
         self.glDraw()
 
     def setSide(self):
 
-        self.transform = np.array([[0., 0., 1., 0.],
-                                   [0., 1., 0., 0.],
-                                   [1., 0., 0., 0.],
-                                   [0., 0., 0., 1.]], dtype=np.float32)
+        self.setRotation([  [0, 0, 1],
+                            [0, 1, 0],
+                            [1, 0, 0]])
 
-        self.glDraw()
+
 
     def setFront(self):
 
-        self.transform = np.array([[-1, 0, 0, 0],
-                                   [0, 1, 0, 0],
-                                   [0, 0, -1, 0],
-                                   [0, 0, 0, 1]], dtype=np.float32)
-
-        self.glDraw()
+        self.setRotation([ [-1, 0, 0],
+                           [0, 1, 0],
+                           [0, 0, -1]])
 
     def setTop(self):
 
-        self.transform = np.array([[1, 0, 0, 0],
-                                   [0, 0, 1, 0],
-                                   [0, -1, 0, 0],
-                                   [0, 0, 0, 1]], dtype=np.float32)
-
-        self.glDraw()
+        self.setRotation([ [1, 0, 0],
+                           [0, 0, 1],
+                           [0, -1, 0]])
 
     def setAngled(self):
 
-        self.transform = np.array([[0.5, 0.5, -0.75, 0.],
-               [0, 0.75, 0.5, 0.],
-               [0.75, -0.5, 0.5, 0.],
-               [0., 0., 0., 1.]], dtype=np.float32)
-
-        self.glDraw()
+        self.setRotation([ [0.5, 0.5, -0.75],
+                           [0, 0.75, 0.5],
+                           [0.75, -0.5, 0.5]])
 
     def setRenderPerspective(self, state):
 
