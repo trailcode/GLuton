@@ -1,3 +1,4 @@
+from PyQt4.QtGui import QFont
 from spyderlib.widgets.internalshell import InternalShell
 from spyderlib.utils.module_completion import module_completion
 

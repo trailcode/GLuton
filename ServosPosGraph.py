@@ -141,7 +141,7 @@ class ServosPosGraph(QGLWidget):
         glLineWidth(1)
 
 
-    def resizeGL(self, w, h):
+    def resizeGL(self, w: int, h: int):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         padd = 5
@@ -152,7 +152,7 @@ class ServosPosGraph(QGLWidget):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT)
 
-    def setMouseTracking(self, flag):
+    def setMouseTracking(self, flag: bool):
         def recursive_set(parent):
             for child in parent.findChildren(QObject):
                 try:
@@ -164,6 +164,6 @@ class ServosPosGraph(QGLWidget):
         QWidget.setMouseTracking(self, flag)
         recursive_set(self)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QMouseEvent):
         #print('mouseMoveEvent: x=%d, y=%d' % (event.x(), event.y()))
         pass

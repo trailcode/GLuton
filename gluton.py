@@ -1,7 +1,7 @@
 import os
 import operator
 from PyQt4 import uic, QtGui
-from PyQt4.QtCore import Qt, QTimer, QSettings
+from PyQt4.QtCore import Qt, QTimer, QSettings, QEvent
 from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCheckBox
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev, UnivariateSpline
@@ -43,15 +43,15 @@ class GLuton(QMainWindow):
         self.closestKeyValue = None
         self.allowGlutonCanvasRedraw = True
         self.inTime = False
-        self.copyBuffer = None
+        self.copyBuffer = None # type: list
         self.playing = False
         self.interpolationMode = 0
         self.currBeingEdited = 0
         """The index of the slider currently being edited or having the mouse over the key value slider"""
         self.servoPositionSliders = []
-        self.timeSlider = None
-        self.timeLabel = None
-        self.timer = None
+        self.timeSlider = None # type: QSlider
+        self.timeLabel = None # type: QSlider
+        self.timer = None # type: QTimer
         self.servoPosGraphShowServo = []
         self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
@@ -123,7 +123,7 @@ class GLuton(QMainWindow):
         self.showMaximized()
 
     def setupServos(self):
-
+        """Create the sliders for the servos and time slider, labels and spin boxes. Connect events to glue logic"""
         for i in self.servoNames: self.servoPosGraphShowServo += [True]
 
         # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
@@ -133,18 +133,19 @@ class GLuton(QMainWindow):
                 index) + ', value)')
 
             class ServoSlider(QSlider):
-                def __init__(self, c, gluton, direction, parent=None):
+                """Servo slider object"""
+                def __init__(self, gluton: GLuton, direction, parent=None):
                     super(ServoSlider, self).__init__(direction, parent)
                     self.setMouseTracking(True)
                     self.number = index
                     self.gluton = gluton
 
-                def enterEvent(self, event):
+                def enterEvent(self, event: QEvent):
                     """Take note of the current servo being edit when the mouse enters this widget and update display"""
                     self.gluton.currBeingEdited = self.number
                     self.gluton.canvas.glDraw()
 
-            slider = ServoSlider(index, self, Qt.Horizontal)  # Create the slider
+            slider = ServoSlider(self, Qt.Horizontal)  # Create the slider
             slider.setMaximum(256)
             self.sliders += [slider]
             spinBox = QSpinBox()  # Create a spin box which is connected to the slider
@@ -156,7 +157,7 @@ class GLuton(QMainWindow):
             slider.valueChanged.connect(lambda value, box=spinBox: box.setValue(value))
 
             # When the spin box is changed reflect the change in the assoicated slider
-            def valueChanged(s, value):
+            def valueChanged(s, value: int):
                 if self.inServoOrTimeSliderChange: return
                 s.setValue(value)
 
@@ -179,7 +180,9 @@ class GLuton(QMainWindow):
             spinBox.setMaximumHeight(15)
             box.addWidget(slider)
             box.addWidget(spinBox)
+            box.setContentsMargins(0, 0, 0, 0)
 
+            # Time slider is different from the servo sliders, it does not need the show in position graph check box
             if i != 'time':
                 showInPosGraph = QCheckBox()
                 showInPosGraph.setChecked(True)
@@ -192,21 +195,19 @@ class GLuton(QMainWindow):
                     lambda state, sliderName=i: stateChanged(self.servoNames.index(sliderName), state))
 
                 box.addWidget(showInPosGraph)
-
-            box.setContentsMargins(0, 0, 0, 0)
-
-            if i != 'time':
                 self.servoPositionSliders.append(slider)
                 self.ui.verticalLayoutServoPositions.addLayout(box)
 
             else:
+                #Handle time slider case
                 self.timeSlider = slider
                 self.timeLabel = spinBox
                 self.ui.horizontalLayoutTime.addLayout(box)
 
     def setupServoAdjustmentEvents(self):
+        """Setup servo range adjustment events and glue logic"""
 
-        def servoChanged(value):
+        def servoChanged(value: int):
             self.currServo = value
             self.ui.horizontalSliderMin.setValue(self.mins[value])
             self.ui.horizontalSliderMax.setValue(self.maxs[value])
@@ -220,21 +221,21 @@ class GLuton(QMainWindow):
 
         servoChanged(0)
 
-        def minChanged(value):
+        def minChanged(value: int):
             self.ui.labelMin.setText('Min: ' + str(value))
             self.mins[self.currServo] = value
             self.setServo()
 
         self.ui.horizontalSliderMin.valueChanged.connect(minChanged)
 
-        def maxChanged(value):
+        def maxChanged(value: int):
             self.ui.labelMax.setText('Max: ' + str(value))
             self.maxs[self.currServo] = value
             self.setServo()
 
         self.ui.horizontalSliderMax.valueChanged.connect(maxChanged)
 
-        def offsetChanged(value):
+        def offsetChanged(value: int):
             v = float(value) / float(self.ui.horizontalSliderOffset.maximum()) - 0.5
             self.offsets[self.currServo] = v
             self.ui.labelOffset.setText('Offset: ' + "{0:.4f}".format(v))
@@ -242,7 +243,7 @@ class GLuton(QMainWindow):
 
         self.ui.horizontalSliderOffset.valueChanged.connect(offsetChanged)
 
-        def posChanged(value):
+        def posChanged(value: int):
             v = float(value) / float(self.ui.horizontalSliderPos.maximum()) - 0.5
             self.ui.labelPos.setText('Pos: ' + "{0:.4f}".format(v))
             self.poses[self.currServo] = v
@@ -264,7 +265,7 @@ class GLuton(QMainWindow):
 
         self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
 
-        def keyPosChanged(newTimePos):
+        def keyPosChanged(newTimePos: int):
             """
             Moves the current closest key to a new position
             :param newTimePos: The time to move the key to
@@ -283,7 +284,7 @@ class GLuton(QMainWindow):
 
         self.ui.pushButtonDeleteKey.clicked.connect(deleteCurrKey)
 
-        def jumpToKey(key):
+        def jumpToKey(key: int):
             self.canvas.closestKey = key
             self.timeSlider.setValue(key)
 
@@ -324,14 +325,14 @@ class GLuton(QMainWindow):
 
         self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', 'Interpolated Univariate Spline', '1D'])
 
-        def setMode(mode):
+        def setMode(mode: int):
             self.interpolationMode = mode
             self.glutonCanvas.glDraw()
             self.canvas.glDraw()
 
         self.ui.interpolationComboBox.activated.connect(setMode)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QEvent):
         """
         file = QFile('perspective')
         file.open(QIODevice.WriteOnly)
@@ -439,7 +440,7 @@ class GLuton(QMainWindow):
 
         self.inTime = False
 
-    def servoSliderChanged(self, index, value):
+    def servoSliderChanged(self, index: int, value: int):
 
         self.inServoOrTimeSliderChange = True
 
@@ -496,7 +497,7 @@ class GLuton(QMainWindow):
 
         self.allowGlutonCanvasRedraw = True
 
-    def getServoValue(self, i, u):
+    def getServoValue(self, i: int, u: float):
         o = 0.5 + u + self.offsets[i]
         u = max(0, min(1.0, o))
         return self.mins[i] + float(self.maxs[i] - self.mins[i]) * u

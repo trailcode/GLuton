@@ -1,6 +1,6 @@
 from OpenGL.GL import *
 from OpenGL.raw.GLUT import *
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QVector3D, QMatrix4x4
 
 class SceneGraphNode:
     def __init__(self,
@@ -12,14 +12,14 @@ class SceneGraphNode:
         self.positionOffset = positionOffset
         self.children = []
         self.rotationAxis = rotationAxis
-        self.parent = None
+        self.parent = None # type: SceneGraphNode
+        self.rotationMatrix = None # type: QMatrix4x4
         self.angle = 0
-        #self.angleOffset = angleOffset
         self.angleOffset = 0
         self.color = color
         self.position = QVector3D(0.0, 0.0, 0.0)
 
-    def setAngle(self, angle):
+    def setAngle(self, angle: float):
         self.angle = angle + self.angleOffset
 
     def getPosition(self):
@@ -38,21 +38,21 @@ class SceneGraphNode:
             rotationAxis = QVector3D(0,0,0)
         else:
             self.parentPos = self.parent.getPosition()
-            parentM = self.parent.m
+            parentM = self.parent.rotationMatrix
             parentAngle = self.parent.angle
             rotationAxis = self.parent.rotationAxis
 
-        self.m = QMatrix4x4()
+        self.rotationMatrix = QMatrix4x4()
 
         p = self.positionOffset
 
-        self.m.rotate(parentAngle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z())
-        self.m = self.m * parentM
-        p *= self.m
+        self.rotationMatrix.rotate(parentAngle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z())
+        self.rotationMatrix = self.rotationMatrix * parentM
+        p *= self.rotationMatrix
         p += self.parentPos
-        self.mm = QMatrix4x4(self.m)
+        self.mm = QMatrix4x4(self.rotationMatrix)
         axis = self.rotationAxis
-        axis *= self.m
+        axis *= self.rotationMatrix
         self.mm.rotate(self.angle, axis.x(), axis.y(), axis.z())
         self.mm = self.mm.transposed()
         self.position = p

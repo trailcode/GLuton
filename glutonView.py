@@ -1,17 +1,17 @@
-#from PyQt4.QtOpenGL import *
+import copy
 from PyQt4.QtOpenGL import QGLWidget, QGLFormat
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from PyQt4.QtCore import QObject, Qt
-from PyQt4.QtGui import *
-from ArcBall import *
+from PyQt4.QtCore import QObject, Qt, QEvent
+from PyQt4.QtGui import QSizePolicy, QVector3D, QWheelEvent, QWidget
+from ArcBall import Matrix4fT, Matrix3fT, ArcBallT, Point2fT, Matrix3fSetRotationFromQuat4f, Matrix3fMulMatrix3f, Matrix4fSetRotationFromMatrix3f
 from SceneGraphNode import SceneGraphNode
 
 PI2 = 2.0*3.1415926535			# 2 * PI (not squared!) 		// PI Squared
 
 class GlutonView(QGLWidget):
 
-    def __init__(self, servoAdjustment, parent = None):
+    def __init__(self, gluton, parent = None):
         fmt = QGLFormat()
         fmt.setSampleBuffers(True)  # antialiasing
 
@@ -21,7 +21,7 @@ class GlutonView(QGLWidget):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
         self.setMouseTracking(True)
-        self.distance = -16.0
+        self.distance = -16.0 # type: int
         self.transform = Matrix4fT()
         self.lastRot = Matrix3fT()
         self.thisRot = Matrix3fT()
@@ -39,9 +39,9 @@ class GlutonView(QGLWidget):
         self.lastRightFootPos = 0
         self.lastLeftFootPos = 0
 
-        def addServo(servoName, parent, servo):
+        def addServo(servoName, parentServo, servo):
             self.servos[servoName] = servo
-            self.servos[parent].addChild(servo)
+            self.servos[parentServo].addChild(servo)
 
         addServo('Right Hip',       'root',             SceneGraphNode(QVector3D(1,0,0),      QVector3D(1,0,0),   [1,0.45,0,1]))
         addServo('Left Hip',        'root',             SceneGraphNode(QVector3D(-1, 0, 0),   QVector3D(1, 0, 0), [0,0.45,1]))
@@ -160,7 +160,7 @@ class GlutonView(QGLWidget):
         glEnd()
 
 
-    def resizeGL(self, width, height):
+    def resizeGL(self, width: int, height: int):
         # Prevent A Divide By Zero If The Window Is Too Small
         if height == 0: height = 1
 
@@ -194,19 +194,16 @@ class GlutonView(QGLWidget):
 
         glEnable(GL_COLOR_MATERIAL)
 
-    def setMouseTracking(self, flag):
+    def setMouseTracking(self, flag: bool):
         def recursive_set(parent):
             for child in parent.findChildren(QObject):
-                try:
-                    child.setMouseTracking(flag)
-                except:
-                    pass
+                child.setMouseTracking(flag)
                 recursive_set(child)
 
         QWidget.setMouseTracking(self, flag)
         recursive_set(self)
 
-    def doRotate(self, x, y):
+    def doRotate(self, x: int, y: int):
         mouse_pt = Point2fT(x, y)
         ThisQuat = self.arcBall.drag(mouse_pt)  # // Update End Vector And Get Rotation As Quaternion
         self.thisRot = Matrix3fSetRotationFromQuat4f(ThisQuat)  # // Convert Quaternion Into Matrix3fT
@@ -216,8 +213,7 @@ class GlutonView(QGLWidget):
                                                          self.thisRot)  # // Set Our Final Transform's Rotation From This One
         self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
 
-    def mouseMoveEvent(self, event):
-        #print('mouseMoveEvent: x=%d, y=%d' % (event.x(), event.y()))
+    def mouseMoveEvent(self, event: QWheelEvent):
 
         if event.buttons() & Qt.LeftButton: self.doRotate(event.x(), event.y())
 
@@ -225,7 +221,7 @@ class GlutonView(QGLWidget):
         self.swapBuffers()
         self.repaint()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QWheelEvent):
         btns = event.buttons()
         x = event.x()
         y = event.y()
