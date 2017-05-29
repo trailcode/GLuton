@@ -6,8 +6,7 @@ from PyQt4.QtCore import QObject, Qt, QEvent
 from PyQt4.QtGui import QSizePolicy, QVector3D, QWheelEvent, QWidget
 from ArcBall import Matrix4fT, Matrix3fT, ArcBallT, Point2fT, Matrix3fSetRotationFromQuat4f, Matrix3fMulMatrix3f, Matrix4fSetRotationFromMatrix3f
 from SceneGraphNode import SceneGraphNode
-
-PI2 = 2.0*3.1415926535			# 2 * PI (not squared!) 		// PI Squared
+import numpy as np
 
 class GlutonView(QGLWidget):
 
@@ -21,7 +20,7 @@ class GlutonView(QGLWidget):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
         self.setMouseTracking(True)
-        self.distance = -16.0 # type: int
+        self.distance = -16.0
         self.transform = Matrix4fT()
         self.lastRot = Matrix3fT()
         self.thisRot = Matrix3fT()
@@ -70,12 +69,23 @@ class GlutonView(QGLWidget):
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        glMatrixMode(GL_PROJECTION)  # // Select The Projection Matrix
+        glLoadIdentity()  # // Reset The Projection Matrix
+        # // field of view, aspect ratio, near and far
+        # This will squash and stretch our objects as the window is resized.
+        # Note that the near clip plane is 1 (hither) and the far plane is 1000 (yon)
+        # gluPerspective(45.0, float(width) / float(height), 1, 100.0)
+        glOrtho(self.distance, -self.distance, self.distance, -self.distance, -10.0, 100.0)
+
+        glMatrixMode(GL_MODELVIEW)  # // Select The Modelview Matrix
+        glLoadIdentity()  # // Reset The Modelview Matrix
+
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
 
         glLoadIdentity()
-        glTranslatef(0, 0.0, self.distance)
+        #glTranslatef(0, 0.0, self.distance)
 
         glPushMatrix()
         glMultMatrixf(self.transform)
@@ -115,15 +125,20 @@ class GlutonView(QGLWidget):
         self.gridTranslation[1] += delta
         #if delta < 0: self.gridTranslation[1] += delta
         if delta > 0:
-            self.rightFootPoints = []
-            self.leftFootPoints = []
+            #self.rightFootPoints = []
+            #self.leftFootPoints = []
+            pass
 
-        glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
+        #glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
         self.drawGroundGrid()
 
-        self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1])]
-        self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1])]
+        #self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1])]
+        #self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1])]
 
+        self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z())]
+        self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z())]
+
+        #"""
         glColor3f(1, 0, 0)
         glBegin(GL_LINE_STRIP)
         for p in self.rightFootPoints: glVertex3f(p[0], p[1], p[2])
@@ -133,6 +148,7 @@ class GlutonView(QGLWidget):
         glBegin(GL_LINE_STRIP)
         for p in self.leftFootPoints: glVertex3f(p[0], p[1], p[2])
         glEnd()
+        #"""
 
         glPopMatrix()
 
@@ -170,7 +186,8 @@ class GlutonView(QGLWidget):
         # // field of view, aspect ratio, near and far
         # This will squash and stretch our objects as the window is resized.
         # Note that the near clip plane is 1 (hither) and the far plane is 1000 (yon)
-        gluPerspective(45.0, float(width) / float(height), 1, 100.0)
+        #gluPerspective(45.0, float(width) / float(height), 1, 100.0)
+        glOrtho(-5.0, 5, -5.0, 5.0, -10.0, 100.0)
 
         glMatrixMode(GL_MODELVIEW)  # // Select The Modelview Matrix
         glLoadIdentity()  # // Reset The Modelview Matrix
@@ -248,5 +265,41 @@ class GlutonView(QGLWidget):
         if moda & Qt.ShiftModifier : self.doRotate(x, y + delta)
         elif moda & Qt.AltModifier: self.doRotate(x + delta, y)
         else: self.distance += delta * 0.10
+
+        self.glDraw()
+
+    def setSide(self):
+
+        self.transform = np.array([[0., 0., 1., 0.],
+                                   [0., 1., 0., 0.],
+                                   [1., 0., 0., 0.],
+                                   [0., 0., 0., 1.]], dtype=np.float32)
+
+        self.glDraw()
+
+    def setFront(self):
+
+        self.transform = np.array([[-1, 0, 0, 0],
+                                   [0, 1, 0, 0],
+                                   [0, 0, -1, 0],
+                                   [0, 0, 0, 1]], dtype=np.float32)
+
+        self.glDraw()
+
+    def setTop(self):
+
+        self.transform = np.array([[1, 0, 0, 0],
+                                   [0, 0, 1, 0],
+                                   [0, -1, 0, 0],
+                                   [0, 0, 0, 1]], dtype=np.float32)
+
+        self.glDraw()
+
+    def setAngled(self):
+
+        self.transform = np.array([[0.5, 0.5, -0.75, 0.],
+               [0, 0.75, 0.5, 0.],
+               [0.75, -0.5, 0.5, 0.],
+               [0., 0., 0., 1.]], dtype=np.float32)
 
         self.glDraw()

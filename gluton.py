@@ -1,8 +1,9 @@
 import os
 import operator
+import time
 from PyQt4 import uic, QtGui
 from PyQt4.QtCore import Qt, QTimer, QSettings, QEvent
-from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCheckBox
+from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCheckBox, QPixmap, QSplashScreen, QProgressBar
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from ServosPosGraph import ServosPosGraph
@@ -22,6 +23,9 @@ except: pass
 def _str(s): return str.encode(str(s));
 
 gui = None
+
+splash = None
+progressBar = None
 
 class GLuton(QMainWindow):
     """GLuton is here!"""
@@ -96,11 +100,9 @@ class GLuton(QMainWindow):
 
         self.setupInterpolationEvents()
 
+        self.setupPythonConsole()
 
-        global gui
-        gui = self
-        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
-        self.ui.consoleLayout.addWidget(self.pythonshell)
+        self.setupGlutonCanvasEvents()
 
         try:
 
@@ -121,6 +123,8 @@ class GLuton(QMainWindow):
             pass
 
         self.showMaximized()
+
+        #splash.hide()
 
     def setupServos(self):
         """Create the sliders for the servos and time slider, labels and spin boxes. Connect events to glue logic"""
@@ -148,7 +152,9 @@ class GLuton(QMainWindow):
             slider = ServoSlider(self, Qt.Horizontal)  # Create the slider
             slider.setMaximum(256)
             self.sliders += [slider]
-            spinBox = QSpinBox()  # Create a spin box which is connected to the slider
+
+            # Create a spin box which is connected to the slider
+            spinBox = QSpinBox()
             spinBox.setValue(slider.value())
             spinBox.setMaximum(255)
             spinBox.setFixedWidth(45)
@@ -331,6 +337,19 @@ class GLuton(QMainWindow):
             self.canvas.glDraw()
 
         self.ui.interpolationComboBox.activated.connect(setMode)
+
+    def setupPythonConsole(self):
+        global gui
+        gui = self
+        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,
+                                                       light_background=False)
+        self.ui.consoleLayout.addWidget(self.pythonshell)
+
+    def setupGlutonCanvasEvents(self):
+        self.ui.sideButton.clicked.connect(lambda : self.glutonCanvas.setSide())
+        self.ui.frontButton.clicked.connect(lambda : self.glutonCanvas.setFront())
+        self.ui.topButton.clicked.connect(lambda: self.glutonCanvas.setTop())
+        self.ui.angledButton.clicked.connect(lambda: self.glutonCanvas.setAngled())
 
     def closeEvent(self, event: QEvent):
         """
@@ -533,7 +552,37 @@ class GLuton(QMainWindow):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
+
+    """
+    # Create and display the splash screen
+    splash_pix = QPixmap('logo.png')
+    global splash
+    global progressBar
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+    # adding progress bar
+    progressBar = QProgressBar(splash)
+
+    splash.setMask(splash_pix.mask())
+
+    print('before')
+    splash.show()
+
+    print('after')
+    """
+
     window = GLuton()
+    print('after2')
+    """
+    for i in range(0, 100):
+        progressBar.setValue(i)
+        t = time.time()
+        while time.time() < t + 0.1:
+            app.processEvents()
+            """
+
+    # Simulate something that takes time
+    #time.sleep(2)
+
     window.show()
     window.raise_()
 
