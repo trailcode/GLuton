@@ -346,10 +346,12 @@ class GLuton(QMainWindow):
         self.ui.consoleLayout.addWidget(self.pythonshell)
 
     def setupGlutonCanvasEvents(self):
-        self.ui.sideButton.clicked.connect(lambda : self.glutonCanvas.setSide())
-        self.ui.frontButton.clicked.connect(lambda : self.glutonCanvas.setFront())
-        self.ui.topButton.clicked.connect(lambda: self.glutonCanvas.setTop())
-        self.ui.angledButton.clicked.connect(lambda: self.glutonCanvas.setAngled())
+        self.ui.sideButton  .clicked.connect(lambda : self.glutonCanvas.setSide())
+        self.ui.frontButton .clicked.connect(lambda : self.glutonCanvas.setFront())
+        self.ui.topButton   .clicked.connect(lambda : self.glutonCanvas.setTop())
+        self.ui.angledButton.clicked.connect(lambda : self.glutonCanvas.setAngled())
+
+        self.ui.checkBox.stateChanged.connect(lambda state: self.glutonCanvas.setRenderPerspective(state))
 
     def closeEvent(self, event: QEvent):
         """
