@@ -18,7 +18,7 @@ class ServosPosGraph(QGLWidget):
         self.sliders = servoAdjustment.sliders
         self.servoAdjustment = servoAdjustment
         self.colors = [(70,128,50),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
-                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)] # Move to gluton.py
+                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)] # Move to Gluton.py
         self.setMouseTracking(True)
         self.closestKey = 0
 

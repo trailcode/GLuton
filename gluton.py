@@ -7,7 +7,7 @@ from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCh
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from ServosPosGraph import ServosPosGraph
-from glutonView import GlutonView
+from GlutonView import GlutonView
 from spyderlib.widgets import internalshell
 import numpy as np
 import sys
@@ -79,6 +79,10 @@ class GLuton(QMainWindow):
                           22: [128, 54, 179, 128, 128, 128, 127, 90, 96, 128, 128, 128],
                           60: [127, 125, 93, 162, 127, 127, 127, 19, 232, 89, 127, 127],
                           159: [128, 11, 136, 128, 128, 128, 127, 125, 109, 128, 128, 128]}
+
+        """
+        self.animation = {0: [127, 126, 159, 89, 127, 127, 125, 126, 91, 165, 127, 127], 256: [127, 126, 159, 89, 127, 127, 125, 126, 91, 165, 127, 127], 129: [121, 92, 98, 147, 121, 121, 121, 126, 138, 97, 121, 121], 75: [126, 131, 77, 160, 126, 126, 126, 24, 225, 89, 126, 126], 192: [127, 15, 192, 108, 127, 127, 128, 123, 88, 158, 127, 127], 84: [128, 125, 73, 165, 128, 128, 126, 34, 219, 85, 128, 128], 22: [126, 77, 139, 126, 126, 126, 120, 52, 123, 128, 126, 126], 159: [128, 40, 136, 128, 128, 128, 127, 125, 106, 128, 128, 128], 226: [125, 62, 169, 85, 125, 125, 124, 124, 79, 161, 125, 125], 42: [127, 106, 119, 142, 127, 127, 125, 26, 162, 110, 127, 127], 110: [121, 111, 81, 158, 121, 121, 123, 98, 173, 88, 121, 121], 60: [127, 131, 89, 162, 127, 127, 127, 15, 209, 89, 127, 127]}
+        """
 
         def save():
             print('  self.mins =', self.mins)

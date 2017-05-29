@@ -7,6 +7,7 @@ from PyQt4.QtGui import QSizePolicy, QVector3D, QWheelEvent, QWidget
 from ArcBall import Matrix4fT, Matrix3fT, ArcBallT, Point2fT, Matrix3fSetRotationFromQuat4f, Matrix3fMulMatrix3f, Matrix4fSetRotationFromMatrix3f
 from SceneGraphNode import SceneGraphNode
 import numpy as np
+from collections import deque
 
 class GlutonView(QGLWidget):
 
@@ -41,6 +42,9 @@ class GlutonView(QGLWidget):
         self.renderWithPerspective = True
         self.moveGrid = True
 
+        self.rightFootPoints = deque(maxlen=512)
+        self.leftFootPoints = deque(maxlen=512)
+
         def addServo(servoName, parentServo, servo):
             self.servos[servoName] = servo
             self.servos[parentServo].addChild(servo)
@@ -63,9 +67,6 @@ class GlutonView(QGLWidget):
         addServo('Head',            'chest',            SceneGraphNode(QVector3D(0, 0.8, 0),  QVector3D(1, 0, 0)))
         addServo('Right Foot',      'Right Ankle',      SceneGraphNode(QVector3D(0.3, 0, 0),  QVector3D(1, 0, 0), [1,0.45,0,1]))
         addServo('Left Foot',       'Left Ankle',       SceneGraphNode(QVector3D(-0.3, 0, 0), QVector3D(1, 0, 0), [0,0.45,1]))
-
-        self.rightFootPoints = []
-        self.leftFootPoints = []
 
     def paintGL(self):
         self.makeCurrent()
@@ -127,13 +128,13 @@ class GlutonView(QGLWidget):
 
         if not self.moveGrid:
             self.gridTranslation[1] += delta
-            self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z())]
-            self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z())]
+            self.rightFootPoints.append((A.x(), A.y() + heightDiff, A.z()))
+            self.leftFootPoints.append((B.x(), B.y() + heightDiff, B.z()))
         else:
             if delta < 0: self.gridTranslation[1] += delta
             glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
-            self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1])]
-            self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1])]
+            self.rightFootPoints.append((A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1]))
+            self.leftFootPoints.append((B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1]))
 
 
         if delta > 0:
@@ -320,8 +321,8 @@ class GlutonView(QGLWidget):
 
     def setMoveGrid(self, state):
 
-        self.rightFootPoints = []
-        self.leftFootPoints = []
+        self.rightFootPoints = deque(maxlen=512)
+        self.leftFootPoints = deque(maxlen=512)
 
         self.moveGrid = state != 0
         self.glDraw()
