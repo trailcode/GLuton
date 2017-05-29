@@ -64,8 +64,6 @@ class GLuton(QMainWindow):
         self.copyBuffer = None
         self.playing = False
 
-        self.setupServoAdjustmentEvents()
-
         def save():
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
@@ -73,33 +71,6 @@ class GLuton(QMainWindow):
             print('  self.animation =', self.animation)
 
         self.ui.actionSave.triggered.connect(save)
-
-        #########################################
-        # Stuff for the key frame editor
-        #########################################
-
-        def copyPrevKey():
-            """Copies key previous to the current time and inserts it at the current time."""
-            pair = self.getCurrKeyPair()
-            if pair is None: return
-            ani = self.animation[pair[0]]
-            for i in range(len(ani)): self.servoPositionSliders[i].setValue(ani[i])
-
-
-        self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
-
-        def keyPosChanged(newTimePos):
-            """
-            Moves the current closest key to a new position
-            :param newTimePos: The time to move the key to
-            :type newTimePos: int
-            """
-            if self.settingKeyPos: return
-            self.animation[newTimePos] = self.animation.pop(self.canvas.closestKey)
-            self.canvas.glDraw()
-            self.timeSlider.setValue(newTimePos) # Updating the time slider will update the state of everything
-
-        self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
 
         self.servoNames = [ 'Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                             'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
@@ -224,15 +195,12 @@ class GLuton(QMainWindow):
 
         self.servoChanged(0)
 
-        self.setupKeyManagementEvents()
-
         global gui
         gui = self
         self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
         self.ui.consoleLayout.addWidget(self.pythonshell)
 
         try:
-            #dsads
 
             UI_VERSION = 1
             programname = os.path.basename(__file__)
@@ -248,6 +216,10 @@ class GLuton(QMainWindow):
             self.ui.keyValueGrapDockWidget.restoreGeometry(settings.value("keyValueGrapDockWidget"))
 
         except: pass
+
+        self.setupKeyManagementEvents()
+
+        self.setupServoAdjustmentEvents()
 
         self.updateServoSliders()
 
@@ -292,6 +264,28 @@ class GLuton(QMainWindow):
 
     def setupKeyManagementEvents(self):
 
+        def copyPrevKey():
+            """Copies key previous to the current time and inserts it at the current time."""
+            pair = self.getCurrKeyPair()
+            if pair is None: return
+            ani = self.animation[pair[0]]
+            for i in range(len(ani)): self.servoPositionSliders[i].setValue(ani[i])
+
+        self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
+
+        def keyPosChanged(newTimePos):
+            """
+            Moves the current closest key to a new position
+            :param newTimePos: The time to move the key to
+            :type newTimePos: int
+            """
+            if self.settingKeyPos: return
+            self.animation[newTimePos] = self.animation.pop(self.canvas.closestKey)
+            self.canvas.glDraw()
+            self.timeSlider.setValue(newTimePos)  # Updating the time slider will update the state of everything
+
+        self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
+
         def deleteCurrKey():
             self.animation.pop(self.getClosestKey())
             self.canvas.glDraw()
@@ -333,7 +327,7 @@ class GLuton(QMainWindow):
             self.playing = not self.playing
 
         self.ui.playButton.clicked.connect(playPause)
-    
+
         self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
 
     def customEvent(self, event):
