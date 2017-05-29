@@ -72,10 +72,11 @@ class GlutonView(QGLWidget):
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        if not self.renderWithPerspective:
-            glMatrixMode(GL_PROJECTION)  # // Select The Projection Matrix
-            glLoadIdentity()  # // Reset The Projection Matrix
-            glOrtho(self.distance, -self.distance, self.distance, -self.distance, -100.0, 100.0)
+        glMatrixMode(GL_PROJECTION)  # // Select The Projection Matrix
+        glLoadIdentity()  # // Reset The Projection Matrix
+
+        if self.renderWithPerspective:  gluPerspective(45.0, float(self.width()) / float(self.height()), 1, 100.0)
+        else:                           glOrtho(self.distance, -self.distance, self.distance, -self.distance, -100.0, 100.0)
 
         glMatrixMode(GL_MODELVIEW)  # // Select The Modelview Matrix
         glLoadIdentity()  # // Reset The Modelview Matrix
@@ -279,6 +280,7 @@ class GlutonView(QGLWidget):
     def setRotation(self, rotation):
 
         self.thisRot = np.array(rotation, dtype=np.float32)
+        self.lastRot = np.array(rotation, dtype=np.float32) # Needed?
 
         # Set Our Final Transform's Rotation From This One
         self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
@@ -314,15 +316,6 @@ class GlutonView(QGLWidget):
     def setRenderPerspective(self, state):
 
         self.renderWithPerspective = state != 0
-
-        if self.renderWithPerspective:
-            glMatrixMode(GL_PROJECTION)  # // Select The Projection Matrix
-            glLoadIdentity()  # // Reset The Projection Matrix
-            #field of view, aspect ratio, near and far
-            # This will squash and stretch our objects as the window is resized.
-            # Note that the near clip plane is 1 (hither) and the far plane is 1000 (yon)
-            gluPerspective(45.0, float(self.width()) / float(self.height()), 1, 100.0)
-
         self.glDraw()
 
     def setMoveGrid(self, state):
