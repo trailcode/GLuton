@@ -1,7 +1,8 @@
 import os
+import operator
 from PyQt4 import uic, QtGui
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt, QTimer, QSettings
+from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCheckBox
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from ServosPosGraph import ServosPosGraph
@@ -19,25 +20,6 @@ except: pass
 """
 
 def _str(s): return str.encode(str(s));
-
-import operator
-
-def get_truth(inp, relate, cut):
-    ops = {'>': operator.gt,
-           '<': operator.lt,
-           '>=': operator.ge,
-           '<=': operator.le,
-           '=': operator.eq}
-    return ops[relate](inp, cut)
-
-
-class _Event(QEvent):
-    EVENT_TYPE = QEvent.Type(QEvent.registerEventType())
-
-    def __init__(self, callback):
-        # thread-safe
-        QEvent.__init__(self, _Event.EVENT_TYPE)
-        self.callback = callback
 
 class GLuton(QMainWindow):
     """GLuton is here!"""
@@ -65,100 +47,14 @@ class GLuton(QMainWindow):
         self.currBeingEdited = 0
         """The index of the slider currently being edited or having the mouse over the key value slider"""
         self.servoPositionSliders = []
+        self.timeSlider = None
+        self.timer = None
         self.servoPosGraphShowServo = []
         self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
                            'time']
 
-        def save():
-            print('  self.mins =', self.mins)
-            print('  self.maxs =', self.maxs)
-            print('  self.offsets =', self.offsets)
-            print('  self.animation =', self.animation)
-
-        self.ui.actionSave.triggered.connect(save)
-
-        for i in self.servoNames: self.servoPosGraphShowServo += [True]
-
-        # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
-        for i,index in zip(self.servoNames, range(0, len(self.servoNames))):
-
-            exec('GLuton.servoSliderChanged' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
-
-            class ServoSlider(QSlider):
-                def __init__(self, c, gluton, direction, parent=None):
-                    super(ServoSlider, self).__init__(direction, parent)
-                    self.setMouseTracking(True)
-                    self.number = index
-                    self.gluton = gluton
-
-                def enterEvent(self, event):
-                    """Take note of the current servo being edit when the mouse enters this widget and update display"""
-                    self.gluton.currBeingEdited = self.number
-                    self.gluton.canvas.glDraw()
-
-
-            slider = ServoSlider(index, self, Qt.Horizontal) # Create the slider
-            slider.setMaximum(256)
-            self.sliders += [slider]
-            spinBox = QSpinBox() # Create a spin box which is connected to the slider
-            spinBox.setValue(slider.value())
-            spinBox.setMaximum(255)
-            spinBox.setFixedWidth(45)
-
-            # When the slider is changed, reflect the change in the associated spin box
-            slider.valueChanged.connect(lambda value, box = spinBox : box.setValue(value))
-
-            # When the spin box is changed reflect the change in the assoicated slider
-            def valueChanged(s, value):
-                if self.inServoOrTimeSliderChange: return
-                s.setValue(value)
-
-            # Connect spin box to above function
-            spinBox.valueChanged.connect(lambda value, s = slider: valueChanged(s, value))
-
-            # Do you really need to do it this way?
-            global _self
-            _self = self
-            exec('slider.valueChanged.connect(lambda x: _self.servoSliderChanged' + str(index) + '(x))')
-
-            box = QHBoxLayout()
-            label = QLabel()
-            label.setText(i + ':')
-            label.setFixedWidth(100)
-            label.setMaximumHeight(15)
-            label.setAlignment(Qt.AlignRight)
-            box.addWidget(label)
-            slider.setMaximumHeight(15)
-            spinBox.setMaximumHeight(15)
-            box.addWidget(slider)
-            box.addWidget(spinBox)
-
-            if i != 'time':
-
-                showInPosGraph = QCheckBox()
-                showInPosGraph.setChecked(True)
-
-                def stateChanged(sliderIndex, state):
-                    self.servoPosGraphShowServo[sliderIndex] = state != 0
-                    self.canvas.glDraw()
-
-                showInPosGraph.stateChanged.connect(lambda state, sliderName = i: stateChanged(self.servoNames.index(sliderName), state))
-
-                box.addWidget(showInPosGraph)
-
-            box.setContentsMargins(0,0,0,0)
-
-            if i != 'time':
-                self.servoPositionSliders.append(slider)
-                self.ui.verticalLayoutServoPositions.addLayout(box)
-
-            else:
-                self.timeSlider = slider
-                self.timeLabel = spinBox
-                self.ui.horizontalLayoutTime.addLayout(box)
-
-        self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        self.poses = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
@@ -177,10 +73,15 @@ class GLuton(QMainWindow):
                           60: [127, 125, 93, 162, 127, 127, 127, 19, 232, 89, 127, 127],
                           159: [128, 11, 136, 128, 128, 128, 127, 125, 109, 128, 128, 128]}
 
-        global gui
-        gui = self
-        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
-        self.ui.consoleLayout.addWidget(self.pythonshell)
+        def save():
+            print('  self.mins =', self.mins)
+            print('  self.maxs =', self.maxs)
+            print('  self.offsets =', self.offsets)
+            print('  self.animation =', self.animation)
+
+        self.ui.actionSave.triggered.connect(save)
+
+        self.setupServos()
 
         self.setupKeyManagementEvents()
 
@@ -191,6 +92,12 @@ class GLuton(QMainWindow):
         self.setupPlayAnimationEvents()
 
         self.setupInterpolationEvents()
+
+
+        global gui
+        gui = self
+        self.pythonshell = internalshell.InternalShell(self, namespace=globals(), commands=[], multithreaded=False,light_background=False)
+        self.ui.consoleLayout.addWidget(self.pythonshell)
 
         try:
 
@@ -211,6 +118,88 @@ class GLuton(QMainWindow):
             pass
 
         self.showMaximized()
+
+    def setupServos(self):
+
+        for i in self.servoNames: self.servoPosGraphShowServo += [True]
+
+        # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
+        for i, index in zip(self.servoNames, range(0, len(self.servoNames))):
+
+            exec('GLuton.servoSliderChanged' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(
+                index) + ', value)')
+
+            class ServoSlider(QSlider):
+                def __init__(self, c, gluton, direction, parent=None):
+                    super(ServoSlider, self).__init__(direction, parent)
+                    self.setMouseTracking(True)
+                    self.number = index
+                    self.gluton = gluton
+
+                def enterEvent(self, event):
+                    """Take note of the current servo being edit when the mouse enters this widget and update display"""
+                    self.gluton.currBeingEdited = self.number
+                    self.gluton.canvas.glDraw()
+
+            slider = ServoSlider(index, self, Qt.Horizontal)  # Create the slider
+            slider.setMaximum(256)
+            self.sliders += [slider]
+            spinBox = QSpinBox()  # Create a spin box which is connected to the slider
+            spinBox.setValue(slider.value())
+            spinBox.setMaximum(255)
+            spinBox.setFixedWidth(45)
+
+            # When the slider is changed, reflect the change in the associated spin box
+            slider.valueChanged.connect(lambda value, box=spinBox: box.setValue(value))
+
+            # When the spin box is changed reflect the change in the assoicated slider
+            def valueChanged(s, value):
+                if self.inServoOrTimeSliderChange: return
+                s.setValue(value)
+
+            # Connect spin box to above function
+            spinBox.valueChanged.connect(lambda value, s=slider: valueChanged(s, value))
+
+            # Do you really need to do it this way?
+            global _self
+            _self = self
+            exec('slider.valueChanged.connect(lambda x: _self.servoSliderChanged' + str(index) + '(x))')
+
+            box = QHBoxLayout()
+            label = QLabel()
+            label.setText(i + ':')
+            label.setFixedWidth(100)
+            label.setMaximumHeight(15)
+            label.setAlignment(Qt.AlignRight)
+            box.addWidget(label)
+            slider.setMaximumHeight(15)
+            spinBox.setMaximumHeight(15)
+            box.addWidget(slider)
+            box.addWidget(spinBox)
+
+            if i != 'time':
+                showInPosGraph = QCheckBox()
+                showInPosGraph.setChecked(True)
+
+                def stateChanged(sliderIndex, state):
+                    self.servoPosGraphShowServo[sliderIndex] = state != 0
+                    self.canvas.glDraw()
+
+                showInPosGraph.stateChanged.connect(
+                    lambda state, sliderName=i: stateChanged(self.servoNames.index(sliderName), state))
+
+                box.addWidget(showInPosGraph)
+
+            box.setContentsMargins(0, 0, 0, 0)
+
+            if i != 'time':
+                self.servoPositionSliders.append(slider)
+                self.ui.verticalLayoutServoPositions.addLayout(box)
+
+            else:
+                self.timeSlider = slider
+                self.timeLabel = spinBox
+                self.ui.horizontalLayoutTime.addLayout(box)
 
     def setupServoAdjustmentEvents(self):
 
@@ -368,13 +357,22 @@ class GLuton(QMainWindow):
     def getCurrKeyPair(self, value=None, cmp = '>=', justIndex = False):
         if value is None: value = self.timeSlider.value()
         keys = list(self.animation.keys())
-        keys.sort() #@TODO store keys in self already sorted!
+        keys.sort()
+
+        def getTruth(inp, relate, cut):
+            ops = {'>': operator.gt,
+                   '<': operator.lt,
+                   '>=': operator.ge,
+                   '<=': operator.le,
+                   '=': operator.eq}
+            return ops[relate](inp, cut)
+
         for i in range(len(keys)):
-            if get_truth(keys[i], cmp, value):
+            if getTruth(keys[i], cmp, value):
                 if justIndex: return i
                 return (keys[i - 1], keys[i])
 
-    def getClosestKey(self, value=None, cmp = '>='):
+    def getClosestKey(self, value=None):
         if value is None: value = self.timeSlider.value()
         pair = self.getCurrKeyPair(value=value)
         if pair is None: return None
