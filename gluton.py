@@ -39,9 +39,11 @@ class _Event(QEvent):
         QEvent.__init__(self, _Event.EVENT_TYPE)
         self.callback = callback
 
-class ServoAdjustment(QMainWindow):
+class GLuton(QMainWindow):
+    """GLuton is here!"""
+
     def __init__(self):
-        super(ServoAdjustment, self).__init__()
+        super(GLuton, self).__init__()
         self.ui = uic.loadUi("gluton.ui", self)
         self.ui.show()
 
@@ -54,11 +56,16 @@ class ServoAdjustment(QMainWindow):
         self.glutonCanvas = GlutonView(self)
         self.ui.glutonViewLayout.addWidget(self.glutonCanvas)
 
-        self.background_pixmap = QPixmap('logo.png')
         self.settingKeyPos = False
         self.inServoOrTimeSliderChange = False
         self.closestKeyValue = None
         self.allowGlutonCanvasRedraw = True
+        self.inTime = False
+        self.copyBuffer = None
+        self.playing = False
+
+        self.setupServoAdjustmentEvents()
+
         def save():
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
@@ -67,36 +74,39 @@ class ServoAdjustment(QMainWindow):
 
         self.ui.actionSave.triggered.connect(save)
 
+        #########################################
+        # Stuff for the key frame editor
+        #########################################
+
         def copyPrevKey():
+            """Copies key previous to the current time and inserts it at the current time."""
             pair = self.getCurrKeyPair()
             if pair is None: return
             ani = self.animation[pair[0]]
-            for i in range(len(ani)):
-                self.servoValueSliders[i].setValue(ani[i])
+            for i in range(len(ani)): self.servoPositionSliders[i].setValue(ani[i])
 
 
         self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
 
-        def keyPosChanged(value):
+        def keyPosChanged(newTimePos):
+            """
+            Moves the current closest key to a new position
+            :param newTimePos: The time to move the key to
+            :type newTimePos: int
+            """
             if self.settingKeyPos: return
-            self.animation[value] = self.animation.pop(self.canvas.closestKey)
+            self.animation[newTimePos] = self.animation.pop(self.canvas.closestKey)
             self.canvas.glDraw()
-            self.timeSlider.setValue(value)
+            self.timeSlider.setValue(newTimePos) # Updating the time slider will update the state of everything
 
         self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
 
-        self.currBeingEdited = 0
-
-        self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
-                      'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
+        self.servoNames = [ 'Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
+                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
         self.servoPosGraphShowServo = []
 
-        for i in self.names: self.servoPosGraphShowServo += [True]
-
-        self.servoValueSliders = []
-        self.servoValueLabels = []
-        self.center()
+        for i in self.servoNames: self.servoPosGraphShowServo += [True]
 
         self.interpolationMode = 0
         self.ui.interpolationComboBox.addItems(['B-Spline', 'Univariate Spline', 'Interpolated Univariate Spline', '1D'])
@@ -108,51 +118,60 @@ class ServoAdjustment(QMainWindow):
 
         self.ui.interpolationComboBox.activated.connect(setMode)
 
-        for i,index in zip(self.names, range(0, len(self.names))):
-            exec('ServoAdjustment.servoSliderChanged' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
-            label = QLabel()
-            label.setText(i + ':')
-            label.setFixedWidth(100)
-            label.setAlignment(Qt.AlignRight)
-            class MySlider(QSlider):
-                def __init__(self, c, servoAdjustment, direction, parent=None):
-                    super(MySlider, self).__init__(direction, parent)
+        self.currBeingEdited = 0
+        """The index of the slider currently being edited or having the mouse over the key value slider"""
+
+        self.servoPositionSliders = []
+
+        # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
+        for i,index in zip(self.servoNames, range(0, len(self.servoNames))):
+
+            exec('GLuton.servoSliderChanged' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(index) + ', value)')
+
+            class ServoSlider(QSlider):
+                def __init__(self, c, gluton, direction, parent=None):
+                    super(ServoSlider, self).__init__(direction, parent)
                     self.setMouseTracking(True)
                     self.number = index
-                    self.servoAdjustment = servoAdjustment
-                    #self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                    self.gluton = gluton
 
                 def enterEvent(self, event):
+                    """Take note of the current servo being edit when the mouse enters this widget and update display"""
+                    self.gluton.currBeingEdited = self.number
+                    self.gluton.canvas.glDraw()
 
-                    self.servoAdjustment.currBeingEdited = self.number
-                    self.servoAdjustment.canvas.paintGL()
-                    self.servoAdjustment.canvas.swapBuffers()
-                    self.servoAdjustment.canvas.repaint()
-                    #self.setStyleSheet("background-color:#45b545;")
 
-            slider = MySlider(index, self, Qt.Horizontal)
+            slider = ServoSlider(index, self, Qt.Horizontal) # Create the slider
             slider.setMaximum(256)
             self.sliders += [slider]
-            spinBox = QSpinBox()
+            spinBox = QSpinBox() # Create a spin box which is connected to the slider
             spinBox.setValue(slider.value())
             spinBox.setMaximum(255)
             spinBox.setFixedWidth(45)
 
+            # When the slider is changed, reflect the change in the associated spin box
             slider.valueChanged.connect(lambda value, box = spinBox : box.setValue(value))
 
+            # When the spin box is changed reflect the change in the assoicated slider
             def valueChanged(s, value):
                 if self.inServoOrTimeSliderChange: return
                 s.setValue(value)
 
+            # Connect spin box to above function
             spinBox.valueChanged.connect(lambda value, s = slider: valueChanged(s, value))
 
+            # Do you really need to do it this way?
             global _self
             _self = self
             exec('slider.valueChanged.connect(lambda x: _self.servoSliderChanged' + str(index) + '(x))')
 
             box = QHBoxLayout()
-            box.addWidget(label)
+            label = QLabel()
+            label.setText(i + ':')
+            label.setFixedWidth(100)
             label.setMaximumHeight(15)
+            label.setAlignment(Qt.AlignRight)
+            box.addWidget(label)
             slider.setMaximumHeight(15)
             spinBox.setMaximumHeight(15)
             box.addWidget(slider)
@@ -160,20 +179,21 @@ class ServoAdjustment(QMainWindow):
 
             if i != 'time':
 
+                showInPosGraph = QCheckBox()
+                showInPosGraph.setChecked(True)
+
                 def stateChanged(sliderIndex, state):
                     self.servoPosGraphShowServo[sliderIndex] = state != 0
                     self.canvas.glDraw()
 
-                showInPosGraph = QCheckBox()
-                showInPosGraph.setChecked(True)
-                showInPosGraph.stateChanged.connect(lambda state, sliderName = i: stateChanged(self.names.index(sliderName), state))
+                showInPosGraph.stateChanged.connect(lambda state, sliderName = i: stateChanged(self.servoNames.index(sliderName), state))
+
                 box.addWidget(showInPosGraph)
 
             box.setContentsMargins(0,0,0,0)
 
             if i != 'time':
-                self.servoValueSliders.append(slider)
-                self.servoValueLabels.append(spinBox)
+                self.servoPositionSliders.append(slider)
                 self.ui.verticalLayoutServoPositions.addLayout(box)
 
             else:
@@ -182,27 +202,6 @@ class ServoAdjustment(QMainWindow):
                 self.ui.horizontalLayoutTime.addLayout(box)
 
         self.poses = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-
-        """
-        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
-        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
-        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
-                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
-        self.animation = {0: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          256: [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256],
-                          124: [84, 76, 54, 95, 54, 69, 120, 68, 115, 39, 160, 49],
-                          62: [45, 42, 33, 50, 33, 39, 60, 56, 58, 21, 77, 31],
-                          177: [131, 121, 95, 143, 95, 113, 173, 95, 167, 60, 220, 89]}
-                          """
-
-        """
-        self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
-        self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
-        self.offsets = [0.0341796875, 0.0, -0.1591796875, 0.0009765625, -0.07666015625, -0.013671875, -0.115234375,
-                        0.115234375, 0.0341796875, -0.0029296875, -0.03759765625, 0.0, 0, 0, 0, 0]
-        self.animation = {0: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128],
-                          256: [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128]}
-        """
 
         self.mins = [150, 160, 170, 0, 0, 150, 150, 150, 150, 0, 645, 150, 150, 150, 150, 150]
         self.maxs = [560, 570, 580, 570, 367, 550, 550, 550, 550, 603, 179, 550, 550, 550, 550, 550]
@@ -221,26 +220,11 @@ class ServoAdjustment(QMainWindow):
                           60: [127, 125, 93, 162, 127, 127, 127, 19, 232, 89, 127, 127],
                           159: [128, 11, 136, 128, 128, 128, 127, 125, 109, 128, 128, 128]}
 
-        self.ui.horizontalSliderMin.valueChanged.connect(self.minChanged)
-        self.ui.horizontalSliderMax.valueChanged.connect(self.maxChanged)
-        self.ui.horizontalSliderOffset.valueChanged.connect(self.offsetChanged)
-        self.ui.horizontalSliderPos.valueChanged.connect(self.posChanged)
-        self.ui.pushButtonZeroPos.clicked.connect(lambda : self.ui.horizontalSliderPos.setValue(1024))
-        self.ui.zeroOffsetButton.clicked.connect(lambda : self.ui.horizontalSliderOffset.setValue(1024))
-        self.ui.pushButtonDeleteKey.clicked.connect(self.deleteCurrKey)
-
         for i in range(len(self.mins)): self.servoChanged(i)
 
         self.servoChanged(0)
 
-        def jumpToKey(key):
-            self.canvas.closestKey = key
-            self.timeSlider.setValue(key)
-
-        self.ui.pushButtonPrevKey.clicked.connect(lambda : jumpToKey(self.getCurrKeyPair()[0]))
-        self.ui.pushButtonNextKey.clicked.connect(lambda : jumpToKey(self.getCurrKeyPair(cmp='>')[1]))
-
-        self.inTime = False
+        self.setupKeyManagementEvents()
 
         global gui
         gui = self
@@ -267,25 +251,60 @@ class ServoAdjustment(QMainWindow):
 
         self.updateServoSliders()
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda : self.timeSlider.setValue((self.timeSlider.value() + self.ui.stepSpinBox.value()) % self.timeSlider.maximum()))
+        self.setupPlayAnimationEvents()
 
-        self.playing = False
-        def playPause():
-            if self.playing:
-                self.timer.stop()
-                self.ui.playButton.setText(">")
-            else:
-                self.timer.start(self.ui.intervalSpinBox.value())
-                self.ui.playButton.setText("||")
-            self.playing = not self.playing
+        self.showMaximized()
 
+    def setupServoAdjustmentEvents(self):
 
-        self.ui.playButton.clicked.connect(playPause)
+        def minChanged(value):
+            self.ui.labelMin.setText('Min: ' + str(value))
+            self.mins[self.currServo] = value
+            self.setServo()
 
-        self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
+        self.ui.horizontalSliderMin.valueChanged.connect(minChanged)
 
-        self.copyBuffer = None
+        def maxChanged(value):
+            self.ui.labelMax.setText('Max: ' + str(value))
+            self.maxs[self.currServo] = value
+            self.setServo()
+
+        self.ui.horizontalSliderMax.valueChanged.connect(maxChanged)
+
+        def offsetChanged(value):
+            v = float(value) / float(self.ui.horizontalSliderOffset.maximum()) - 0.5
+            self.offsets[self.currServo] = v
+            self.ui.labelOffset.setText('Offset: ' + "{0:.4f}".format(v))
+            self.setServo()
+
+        self.ui.horizontalSliderOffset.valueChanged.connect(offsetChanged)
+
+        def posChanged(value):
+            v = float(value) / float(self.ui.horizontalSliderPos.maximum()) - 0.5
+            self.ui.labelPos.setText('Pos: ' + "{0:.4f}".format(v))
+            self.poses[self.currServo] = v
+            self.setServo()
+
+        self.ui.horizontalSliderPos.valueChanged.connect(posChanged)
+
+        self.ui.pushButtonZeroPos.clicked.connect(lambda: self.ui.horizontalSliderPos.setValue(1024))
+        self.ui.zeroOffsetButton.clicked.connect(lambda: self.ui.horizontalSliderOffset.setValue(1024))
+
+    def setupKeyManagementEvents(self):
+
+        def deleteCurrKey():
+            self.animation.pop(self.getClosestKey())
+            self.canvas.glDraw()
+
+        self.ui.pushButtonDeleteKey.clicked.connect(deleteCurrKey)
+
+        def jumpToKey(key):
+            self.canvas.closestKey = key
+            self.timeSlider.setValue(key)
+
+        self.ui.pushButtonPrevKey.clicked.connect(lambda: jumpToKey(self.getCurrKeyPair()[0]))
+        self.ui.pushButtonNextKey.clicked.connect(lambda: jumpToKey(self.getCurrKeyPair(cmp='>')[1]))
+
         def copy():
             self.copyBuffer = []
             for slider in self.sliders: self.copyBuffer += [slider.value()]
@@ -298,7 +317,24 @@ class ServoAdjustment(QMainWindow):
 
         self.ui.pasteButton.clicked.connect(paste)
 
-        self.showMaximized()
+    def setupPlayAnimationEvents(self):
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda: self.timeSlider.setValue(
+            (self.timeSlider.value() + self.ui.stepSpinBox.value()) % self.timeSlider.maximum()))
+
+        def playPause():
+            if self.playing:
+                self.timer.stop()
+                self.ui.playButton.setText(">")
+            else:
+                self.timer.start(self.ui.intervalSpinBox.value())
+                self.ui.playButton.setText("||")
+            self.playing = not self.playing
+
+        self.ui.playButton.clicked.connect(playPause)
+    
+        self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
 
     def customEvent(self, event):
         # process idle_queue_dispatcher events
@@ -321,12 +357,6 @@ class ServoAdjustment(QMainWindow):
         settings.setValue("state", self.ui.saveState(UI_VERSION))  # save settings (UI_VERSION is a constant you should increment when your UI changes significantly to prevent attempts to restore an invalid state.)
         settings.setValue("keyValueGrapDockWidget", self.ui.keyValueGrapDockWidget.saveGeometry())
         #settings.setValue("mainWinGeom", self.get)
-
-    def deleteCurrKey(self):
-        self.animation.pop(self.getClosestKey())
-        self.canvas.paintGL()
-        self.canvas.swapBuffers()
-        self.canvas.repaint()
 
     def center(self):
         frameGm = self.frameGeometry()
@@ -383,12 +413,12 @@ class ServoAdjustment(QMainWindow):
                     s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
 
-                    self.servoValueSliders[i].setValue(splev(t, s))
+                    self.servoPositionSliders[i].setValue(splev(t, s))
 
                 except:
 
                     intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                    self.servoValueSliders[i].setValue(intp(t))
+                    self.servoPositionSliders[i].setValue(intp(t))
         elif self.interpolationMode == 1:
             for i in range(len(A)):
 
@@ -396,16 +426,16 @@ class ServoAdjustment(QMainWindow):
                     s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
                                          np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
 
-                    self.servoValueSliders[i].setValue(s(t))
+                    self.servoPositionSliders[i].setValue(s(t))
 
                 except:
 
                     intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                    self.servoValueSliders[i].setValue(intp(t))
+                    self.servoPositionSliders[i].setValue(intp(t))
         else:
             for i in range(len(A)):
                 intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                self.servoValueSliders[i].setValue(intp(t))
+                self.servoPositionSliders[i].setValue(intp(t))
 
         self.inTime = False
 
@@ -413,7 +443,7 @@ class ServoAdjustment(QMainWindow):
 
         self.inServoOrTimeSliderChange = True
 
-        if index == self.names.index('time'):
+        if index == self.servoNames.index('time'):
 
             self.settingKeyPos = True
 
@@ -440,7 +470,7 @@ class ServoAdjustment(QMainWindow):
             try:
                 v= self.getServoValue(index, value / 255.0) / 700.0 * 360.0
                 #self.glutonCanvas.servos[self.names[index]].setAngle(v)
-                self.glutonCanvas.servos[self.names[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
+                self.glutonCanvas.servos[self.servoNames[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
                 if self.allowGlutonCanvasRedraw: self.glutonCanvas.glDraw()
 
             except:
@@ -452,13 +482,11 @@ class ServoAdjustment(QMainWindow):
 
             t = self.timeSlider.value()
 
-            self.servoValueLabels[index].setValue(value)
-
             self.animation[t] = []
 
             values = []
 
-            for i in self.servoValueSliders: values += [i.value()]
+            for i in self.servoPositionSliders: values += [i.value()]
 
             self.animation[t] = values
 
@@ -468,16 +496,6 @@ class ServoAdjustment(QMainWindow):
 
         self.allowGlutonCanvasRedraw = True
 
-    def minChanged(self, value):
-        self.ui.labelMin.setText('Min: ' + str(value))
-        self.mins[self.currServo] = value
-        self.setServo()
-
-    def maxChanged(self, value):
-        self.ui.labelMax.setText('Max: ' + str(value))
-        self.maxs[self.currServo] = value
-        self.setServo()
-
     def servoChanged(self, value):
         #print('Servo ', value)
         self.currServo = value
@@ -485,18 +503,6 @@ class ServoAdjustment(QMainWindow):
         self.ui.horizontalSliderMax.setValue(self.maxs[value])
         self.ui.horizontalSliderOffset.setValue(int((float(self.offsets[self.currServo]) + 0.5) * float(self.ui.horizontalSliderOffset.maximum())))
         self.ui.horizontalSliderPos.setValue((self.poses[self.currServo] + 0.5) * float(self.ui.horizontalSliderPos.maximum()))
-        self.setServo()
-
-    def offsetChanged(self, value):
-        v = float(value) / float(self.ui.horizontalSliderOffset.maximum()) - 0.5
-        self.offsets[self.currServo] = v
-        self.ui.labelOffset.setText('Offset: ' + "{0:.4f}".format(v))
-        self.setServo()
-
-    def posChanged(self, value):
-        v = float(value) / float(self.ui.horizontalSliderPos.maximum()) - 0.5
-        self.ui.labelPos.setText('Pos: ' + "{0:.4f}".format(v))
-        self.poses[self.currServo] = v
         self.setServo()
 
     def getServoValue(self, i, u):
@@ -508,7 +514,7 @@ class ServoAdjustment(QMainWindow):
 
         v = self.getServoValue(self.currServo, self.poses[self.currServo])
 
-        try: self.ui.labelServoName.setText(self.names[self.currServo] + ' value: ' + str(int(v)))
+        try: self.ui.labelServoName.setText(self.servoNames[self.currServo] + ' value: ' + str(int(v)))
         except: pass
 
 
@@ -535,7 +541,7 @@ class ServoAdjustment(QMainWindow):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    window = ServoAdjustment()
+    window = GLuton()
     window.show()
     window.raise_()
 

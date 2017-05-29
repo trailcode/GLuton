@@ -374,6 +374,9 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="windowTitle">
+    <string>Key Frame Editor</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>

@@ -41,7 +41,7 @@ class ServosPosGraph(QGLWidget):
         glColor3f(1, 1, 1)
 
         for i,c in list(zip(ani, range(1, 1+len(ani)))):
-            
+
             if i != self.closestKey:   glPointSize(3)
             else:                      glPointSize(6)
 
