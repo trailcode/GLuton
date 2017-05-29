@@ -485,6 +485,9 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="keyFrameEditorDockWidget">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
    <property name="windowTitle">
     <string>Key Frame Editor</string>
    </property>

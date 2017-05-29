@@ -228,15 +228,18 @@ class GlutonView(QGLWidget):
         recursive_set(self)
 
     def doRotate(self, x: int, y: int):
-        mouse_pt = Point2fT(x, y)
-        ThisQuat = self.arcBall.drag(mouse_pt)  # // Update End Vector And Get Rotation As Quaternion
-        self.thisRot = Matrix3fSetRotationFromQuat4f(ThisQuat)  # // Convert Quaternion Into Matrix3fT
+
+        quat = self.arcBall.drag(Point2fT(x, y))  # // Update End Vector And Get Rotation As Quaternion
+
+        self.thisRot = Matrix3fSetRotationFromQuat4f(quat)  # // Convert Quaternion Into Matrix3fT
         # Use correct Linear Algebra matrix multiplication C = A * B
         self.thisRot = Matrix3fMulMatrix3f(self.lastRot, self.thisRot)  # // Accumulate Last Rotation Into This One
 
-        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
-                                                         self.thisRot)  # // Set Our Final Transform's Rotation From This One
+        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform, self.thisRot)  # // Set Our Final Transform's Rotation From This One
+
         self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
+
+        #print(self.transform)
 
     def mouseMoveEvent(self, event: QWheelEvent):
 
@@ -284,8 +287,11 @@ class GlutonView(QGLWidget):
         self.lastRot = np.array(rotation, dtype=np.float32) # Needed?
 
         # Set Our Final Transform's Rotation From This One
-        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform,
-                                                         self.thisRot)
+        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform, self.thisRot)
+        self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
+
+        #print(self.transform)
+
         self.glDraw()
 
     def setSide(self):
@@ -293,8 +299,6 @@ class GlutonView(QGLWidget):
         self.setRotation([  [0, 0, 1],
                             [0, 1, 0],
                             [1, 0, 0]])
-
-
 
     def setFront(self):
 
@@ -310,9 +314,9 @@ class GlutonView(QGLWidget):
 
     def setAngled(self):
 
-        self.setRotation([ [0.5, 0.5, -0.75],
-                           [0, 0.75, 0.5],
-                           [0.75, -0.5, 0.5]])
+        self.setRotation([[7.85150111e-01, 1.77041426e-01, -5.93462944e-01],
+                         [-4.77627560e-04, 9.58442509e-01, 2.85290003e-01],
+                         [6.19307518e-01, -2.23711729e-01, 7.52604902e-01]])
 
     def setRenderPerspective(self, state):
 
