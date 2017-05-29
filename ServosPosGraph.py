@@ -18,7 +18,7 @@ class ServosPosGraph(QGLWidget):
         self.sliders = servoAdjustment.sliders
         self.servoAdjustment = servoAdjustment
         self.colors = [(70,128,50),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
-                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)]
+                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)] # Move to gluton.py
         self.setMouseTracking(True)
         self.closestKey = 0
 
@@ -41,22 +41,14 @@ class ServosPosGraph(QGLWidget):
         glColor3f(1, 1, 1)
 
         for i,c in list(zip(ani, range(1, 1+len(ani)))):
-            #@TODO Colors are wrong here
-            # if i == closest: glPointSize(10)
-            # else: glPointSize(4)
-
-            #if i != closestPair[0] and i != closestPair[1]: glColor3f(self.colors[c][0]/10, self.colors[c][1]/10, self.colors[c][2]/10)
-            """
-            if i != closest:
-                glColor3f(self.colors[c][0] / 10, self.colors[c][1] / 10, self.colors[c][2] / 10)
-            else: glColor3f(1,1,1)
-            """
-
+            
             if i != self.closestKey:   glPointSize(3)
             else:                      glPointSize(6)
 
             glBegin(GL_POINTS)
-            for t in ani[i]: glVertex2d(i,t)
+            points = ani[i]
+            for t in range(len(points)):
+                if self.servoAdjustment.servoPosGraphShowServo[t]: glVertex2d(i,points[t])
             glEnd()
 
         keys, values = self.servoAdjustment.getOrderedKeysValues()
@@ -88,37 +80,39 @@ class ServosPosGraph(QGLWidget):
         if self.servoAdjustment.interpolationMode == 0:
             index = 0
             for i in values:
-                setColorAndLineWidth(index)
+                if self.servoAdjustment.servoPosGraphShowServo[index]:
+                    setColorAndLineWidth(index)
 
-                try:
-                    s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
-                    x = np.linspace(0, 256, 256)
-                    y = splev(x, s)
-                    glBegin(GL_LINE_STRIP)
-                    for i in range(len(y)): glVertex2f(x[i], y[i])
-                    glEnd()
+                    try:
+                        s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                    np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
+                        x = np.linspace(0, 256, 256)
+                        y = splev(x, s)
+                        glBegin(GL_LINE_STRIP)
+                        for i in range(len(y)): glVertex2f(x[i], y[i])
+                        glEnd()
 
-                except: do1D_Interpolation(index)
+                    except: do1D_Interpolation(index)
                 index += 1
 
         elif self.servoAdjustment.interpolationMode == 1:
             index = 0
             for i in values:
-                setColorAndLineWidth(index)
+                if self.servoAdjustment.servoPosGraphShowServo[index]:
+                    setColorAndLineWidth(index)
 
-                try:
-                    s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                         np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
+                    try:
+                        s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
+                                             np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
 
-                    x = np.linspace(0, 256, 256)
-                    y = s(x)
-                    glBegin(GL_LINE_STRIP)
-                    for i in range(len(y)): glVertex2f(x[i], y[i])
-                    glEnd()
+                        x = np.linspace(0, 256, 256)
+                        y = s(x)
+                        glBegin(GL_LINE_STRIP)
+                        for i in range(len(y)): glVertex2f(x[i], y[i])
+                        glEnd()
 
-                except:
-                    do1D_Interpolation(index)
+                    except:
+                        do1D_Interpolation(index)
                 index += 1
             """
             elif self.servoAdjustment.interpolationMode == 2:

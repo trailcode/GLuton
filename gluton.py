@@ -90,6 +90,10 @@ class ServoAdjustment(QMainWindow):
         self.names = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                       'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist', 'time']
 
+        self.servoPosGraphShowServo = []
+
+        for i in self.names: self.servoPosGraphShowServo += [True]
+
         self.servoValueSliders = []
         self.servoValueLabels = []
         self.center()
@@ -153,6 +157,18 @@ class ServoAdjustment(QMainWindow):
             spinBox.setMaximumHeight(15)
             box.addWidget(slider)
             box.addWidget(spinBox)
+
+            if i != 'time':
+
+                def stateChanged(sliderIndex, state):
+                    self.servoPosGraphShowServo[sliderIndex] = state != 0
+                    self.canvas.glDraw()
+
+                showInPosGraph = QCheckBox()
+                showInPosGraph.setChecked(True)
+                showInPosGraph.stateChanged.connect(lambda state, sliderName = i: stateChanged(self.names.index(sliderName), state))
+                box.addWidget(showInPosGraph)
+
             box.setContentsMargins(0,0,0,0)
 
             if i != 'time':

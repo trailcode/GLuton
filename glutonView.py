@@ -140,10 +140,12 @@ class GlutonView(QGLWidget):
 
         self.root.render()
         glPopMatrix()
-        if delta < 0: self.gridTranslation[1] += delta
-        else:
-            #print('delta', delta)
-            pass
+        self.gridTranslation[1] += delta
+        #if delta < 0: self.gridTranslation[1] += delta
+        if delta > 0:
+            self.rightFootPoints = []
+            self.leftFootPoints = []
+
         glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
         self.drawGroundGrid()
 
