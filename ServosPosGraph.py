@@ -61,6 +61,9 @@ class ServosPosGraph(QGLWidget):
 
         keys, values = self.servoAdjustment.getOrderedKeysValues()
 
+        #print('keys', keys)
+        #print('values', values)
+
         def setColorAndLineWidth(index):
             """Change line width depending on current joint being edited"""
             if index == self.servoAdjustment.currBeingEdited:   glLineWidth(4)

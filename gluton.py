@@ -169,9 +169,6 @@ class GLuton(QMainWindow):
         # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
         for i, index in zip(self.servoNames, range(0, len(self.servoNames))):
 
-            exec('GLuton.servoSliderChanged' + str(index) + ' = lambda self, value: self.servoSliderChanged(' + str(
-                index) + ', value)')
-
             class ServoSlider(QSlider):
                 """Servo slider object"""
                 def __init__(self, gluton: GLuton, direction, parent=None):
@@ -187,6 +184,9 @@ class GLuton(QMainWindow):
 
             slider = ServoSlider(self, Qt.Horizontal)  # Create the slider
             slider.setMaximum(256)
+
+            slider.valueChanged.connect(lambda value, _index = index: self.servoSliderChanged(_index, value))
+
             self.sliders += [slider]
 
             # Create a spin box which is connected to the slider
@@ -205,11 +205,6 @@ class GLuton(QMainWindow):
 
             # Connect spin box to above function
             spinBox.valueChanged.connect(lambda value, s=slider: valueChanged(s, value))
-
-            # Do you really need to do it this way?
-            global _self
-            _self = self
-            exec('slider.valueChanged.connect(lambda x: _self.servoSliderChanged' + str(index) + '(x))')
 
             box = QHBoxLayout()
             label = QLabel()
