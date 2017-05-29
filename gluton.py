@@ -3,7 +3,7 @@ import operator
 import time
 from PyQt4 import uic, QtGui
 from PyQt4.QtCore import Qt, QTimer, QSettings, QEvent
-from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCheckBox, QPixmap, QSplashScreen, QProgressBar
+from PyQt4.QtGui import QMainWindow, QHBoxLayout, QLabel, QSpinBox, QSlider, QCheckBox, QDockWidget
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev, UnivariateSpline
 from ServosPosGraph import ServosPosGraph
@@ -80,17 +80,7 @@ class GLuton(QMainWindow):
                           60: [127, 125, 93, 162, 127, 127, 127, 19, 232, 89, 127, 127],
                           159: [128, 11, 136, 128, 128, 128, 127, 125, 109, 128, 128, 128]}
 
-        """
-        self.animation = {0: [127, 126, 159, 89, 127, 127, 125, 126, 91, 165, 127, 127], 256: [127, 126, 159, 89, 127, 127, 125, 126, 91, 165, 127, 127], 129: [121, 92, 98, 147, 121, 121, 121, 126, 138, 97, 121, 121], 75: [126, 131, 77, 160, 126, 126, 126, 24, 225, 89, 126, 126], 192: [127, 15, 192, 108, 127, 127, 128, 123, 88, 158, 127, 127], 84: [128, 125, 73, 165, 128, 128, 126, 34, 219, 85, 128, 128], 22: [126, 77, 139, 126, 126, 126, 120, 52, 123, 128, 126, 126], 159: [128, 40, 136, 128, 128, 128, 127, 125, 106, 128, 128, 128], 226: [125, 62, 169, 85, 125, 125, 124, 124, 79, 161, 125, 125], 42: [127, 106, 119, 142, 127, 127, 125, 26, 162, 110, 127, 127], 110: [121, 111, 81, 158, 121, 121, 123, 98, 173, 88, 121, 121], 60: [127, 131, 89, 162, 127, 127, 127, 15, 209, 89, 127, 127]}
-        """
-
-        def save():
-            print('  self.mins =', self.mins)
-            print('  self.maxs =', self.maxs)
-            print('  self.offsets =', self.offsets)
-            print('  self.animation =', self.animation)
-
-        self.ui.actionSave.triggered.connect(save)
+        self.setupMenuBarEvents()
 
         self.setupServos()
 
@@ -129,6 +119,48 @@ class GLuton(QMainWindow):
         self.showMaximized()
 
         #splash.hide()
+
+    def setupMenuBarEvents(self):
+
+        def save():
+            print('  self.mins =', self.mins)
+            print('  self.maxs =', self.maxs)
+            print('  self.offsets =', self.offsets)
+            print('  self.animation =', self.animation)
+
+        self.ui.actionSave.triggered.connect(save)
+
+        def showHideKeyValueGraph():
+            if self.ui.actionKeyValueGraph.isChecked(): self.ui.keyValueGrapDockWidget.show()
+            else:                                       self.ui.keyValueGrapDockWidget.hide()
+
+        self.ui.actionKeyValueGraph.triggered.connect(showHideKeyValueGraph)
+
+        self.ui.keyValueGrapDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyValueGraph.setChecked(visiable))
+
+        def showHideKeyFrameEditor():
+            if self.actionKeyFrameEditor.isChecked():   self.ui.keyFrameEditorDockWidget.show()
+            else:                                       self.ui.keyFrameEditorDockWidget.hide()
+
+        self.ui.actionKeyFrameEditor.triggered.connect(showHideKeyFrameEditor)
+
+        self.ui.keyFrameEditorDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyFrameEditor.setChecked(visiable))
+
+        def showHideConsole():
+            if self.actionConsole.isChecked():  self.ui.consoleDockWidget.show()
+            else:                               self.ui.consoleDockWidget.hide()
+
+        self.ui.actionConsole.triggered.connect(showHideConsole)
+
+        self.ui.consoleDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionConsole.setChecked(visiable))
+
+        def showHideServoAdjustment():
+            if self.actionConsole.isChecked():  self.ui.servoAdjustmentDockWidget.show()
+            else:                               self.ui.servoAdjustmentDockWidget.hide()
+
+        self.ui.actionServoAdjustment.triggered.connect(showHideServoAdjustment)
+
+        self.ui.servoAdjustmentDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionServoAdjustment.setChecked(visiable))
 
     def setupServos(self):
         """Create the sliders for the servos and time slider, labels and spin boxes. Connect events to glue logic"""
@@ -578,7 +610,7 @@ if __name__ == '__main__':
     """
 
     window = GLuton()
-    print('after2')
+
     """
     for i in range(0, 100):
         progressBar.setValue(i)

@@ -143,6 +143,10 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionKeyValueGraph"/>
+    <addaction name="actionKeyFrameEditor"/>
+    <addaction name="actionConsole"/>
+    <addaction name="actionServoAdjustment"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -167,7 +171,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_2">
+  <widget class="QDockWidget" name="servoAdjustmentDockWidget">
    <property name="windowTitle">
     <string>Servo Adjustment</string>
    </property>
@@ -465,7 +469,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_4">
+  <widget class="QDockWidget" name="consoleDockWidget">
    <property name="windowTitle">
     <string>Console</string>
    </property>
@@ -480,7 +484,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="keyFrameEditorDockWidget">
    <property name="windowTitle">
     <string>Key Frame Editor</string>
    </property>
@@ -848,6 +852,38 @@
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionKeyValueGraph">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Key Value Graph</string>
+   </property>
+  </action>
+  <action name="actionKeyFrameEditor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Key Frame Editor</string>
+   </property>
+  </action>
+  <action name="actionConsole">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Console</string>
+   </property>
+  </action>
+  <action name="actionServoAdjustment">
+   <property name="text">
+    <string>Servo Adjustment</string>
    </property>
   </action>
  </widget>
