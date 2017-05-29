@@ -84,7 +84,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QCheckBox" name="moveGridCheckBox">
           <property name="maximumSize">
            <size>
             <width>85</width>
@@ -100,7 +100,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="perspectiveCheckBox">
           <property name="enabled">
            <bool>true</bool>
           </property>

@@ -351,7 +351,8 @@ class GLuton(QMainWindow):
         self.ui.topButton   .clicked.connect(lambda : self.glutonCanvas.setTop())
         self.ui.angledButton.clicked.connect(lambda : self.glutonCanvas.setAngled())
 
-        self.ui.checkBox.stateChanged.connect(lambda state: self.glutonCanvas.setRenderPerspective(state))
+        self.ui.perspectiveCheckBox.stateChanged.connect(lambda state: self.glutonCanvas.setRenderPerspective(state))
+        self.ui.moveGridCheckBox.stateChanged.connect(lambda state: self.glutonCanvas.setMoveGrid(state))
 
     def closeEvent(self, event: QEvent):
         """

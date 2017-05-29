@@ -39,6 +39,7 @@ class GlutonView(QGLWidget):
         self.lastLeftFootPos = 0
 
         self.renderWithPerspective = True
+        self.moveGrid = True
 
         def addServo(servoName, parentServo, servo):
             self.servos[servoName] = servo
@@ -120,24 +121,28 @@ class GlutonView(QGLWidget):
         glTranslatef(0, heightDiff, 0)
 
         self.root.render()
+
         glPopMatrix()
-        self.gridTranslation[1] += delta
-        #if delta < 0: self.gridTranslation[1] += delta
+
+        if not self.moveGrid:
+            self.gridTranslation[1] += delta
+            self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z())]
+            self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z())]
+        else:
+            if delta < 0: self.gridTranslation[1] += delta
+            glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
+            self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1])]
+            self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1])]
+
+
         if delta > 0:
             #self.rightFootPoints = []
             #self.leftFootPoints = []
             pass
 
-        #glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
+
         self.drawGroundGrid()
 
-        #self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1])]
-        #self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1])]
-
-        self.rightFootPoints += [(A.x(), A.y() + heightDiff, A.z())]
-        self.leftFootPoints += [(B.x(), B.y() + heightDiff, B.z())]
-
-        #"""
         glColor3f(1, 0, 0)
         glBegin(GL_LINE_STRIP)
         for p in self.rightFootPoints: glVertex3f(p[0], p[1], p[2])
@@ -147,7 +152,6 @@ class GlutonView(QGLWidget):
         glBegin(GL_LINE_STRIP)
         for p in self.leftFootPoints: glVertex3f(p[0], p[1], p[2])
         glEnd()
-        #"""
 
         glPopMatrix()
 
@@ -306,6 +310,7 @@ class GlutonView(QGLWidget):
         self.glDraw()
 
     def setRenderPerspective(self, state):
+
         self.renderWithPerspective = state != 0
 
         if self.renderWithPerspective:
@@ -315,5 +320,13 @@ class GlutonView(QGLWidget):
             # This will squash and stretch our objects as the window is resized.
             # Note that the near clip plane is 1 (hither) and the far plane is 1000 (yon)
             gluPerspective(45.0, float(self.width()) / float(self.height()), 1, 100.0)
-            
+
+        self.glDraw()
+
+    def setMoveGrid(self, state):
+
+        self.rightFootPoints = []
+        self.leftFootPoints = []
+
+        self.moveGrid = state != 0
         self.glDraw()

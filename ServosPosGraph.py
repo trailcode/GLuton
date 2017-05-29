@@ -24,6 +24,14 @@ class ServosPosGraph(QGLWidget):
 
     def paintGL(self):
         self.makeCurrent()
+
+        # Need to do this each time for some reason. My guess is because the other canvas changes the projection
+        # matrix each frame when in orthographic mode.
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        padd = 5
+        glOrtho(-padd, 256 + padd, -padd, 256 + padd, -50.0, 50.0)
+
         t = self.servoAdjustment.timeSlider.value()
         glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(0.0, 0.0, 1.0)
@@ -142,11 +150,11 @@ class ServosPosGraph(QGLWidget):
 
 
     def resizeGL(self, w: int, h: int):
+        glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         padd = 5
         glOrtho(-padd, 256 + padd, -padd, 256 + padd, -50.0, 50.0)
-        glViewport(0, 0, w, h)
 
     def initializeGL(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
