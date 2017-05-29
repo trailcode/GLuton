@@ -21,6 +21,8 @@ except: pass
 
 def _str(s): return str.encode(str(s));
 
+gui = None
+
 class GLuton(QMainWindow):
     """GLuton is here!"""
 
@@ -48,6 +50,7 @@ class GLuton(QMainWindow):
         """The index of the slider currently being edited or having the mouse over the key value slider"""
         self.servoPositionSliders = []
         self.timeSlider = None
+        self.timeLabel = None
         self.timer = None
         self.servoPosGraphShowServo = []
         self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
@@ -302,8 +305,7 @@ class GLuton(QMainWindow):
     def setupPlayAnimationEvents(self):
 
         self.timer = QTimer()
-        self.timer.timeout.connect(lambda: self.timeSlider.setValue(
-            (self.timeSlider.value() + self.ui.stepSpinBox.value()) % self.timeSlider.maximum()))
+        self.timer.timeout.connect(lambda: self.timeSlider.setValue((self.timeSlider.value() + self.ui.stepSpinBox.value()) % self.timeSlider.maximum()))
 
         def playPause():
             if self.playing:

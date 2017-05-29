@@ -1,6 +1,5 @@
-from math import cos, sin
-from OpenGL.raw.GLUT import glutSolidCube
-from PyQt4.QtOpenGL import *
+#from PyQt4.QtOpenGL import *
+from PyQt4.QtOpenGL import QGLWidget, QGLFormat
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt4.QtCore import QObject, Qt
@@ -9,33 +8,6 @@ from ArcBall import *
 from SceneGraphNode import SceneGraphNode
 
 PI2 = 2.0*3.1415926535			# 2 * PI (not squared!) 		// PI Squared
-
-def Torus(MinorRadius, MajorRadius):
-	# // Draw A Torus With Normals
-	glBegin( GL_TRIANGLE_STRIP );									# // Start A Triangle Strip
-	for i in range (20): 											# // Stacks
-		for j in range (-1, 20): 										# // Slices
-			# NOTE, python's definition of modulus for negative numbers returns
-			# results different than C's
-			#       (a / d)*d  +  a % d = a
-			if (j < 0):
-				wrapFrac = (-j%20)/20.0
-				wrapFrac *= -1.0
-			else:
-				wrapFrac = (j%20)/20.0;
-			phi = PI2*wrapFrac;
-			sinphi = sin(phi);
-			cosphi = cos(phi);
-
-			r = MajorRadius + MinorRadius*cosphi;
-
-			glNormal3f (sin(PI2*(i%20+wrapFrac)/20.0)*cosphi, sinphi, cos(PI2*(i%20+wrapFrac)/20.0)*cosphi);
-			glVertex3f (sin(PI2*(i%20+wrapFrac)/20.0)*r, MinorRadius*sinphi, cos(PI2*(i%20+wrapFrac)/20.0)*r);
-
-			glNormal3f (sin(PI2*(i+1%20+wrapFrac)/20.0)*cosphi, sinphi, cos(PI2*(i+1%20+wrapFrac)/20.0)*cosphi);
-			glVertex3f (sin(PI2*(i+1%20+wrapFrac)/20.0)*r, MinorRadius*sinphi, cos(PI2*(i+1%20+wrapFrac)/20.0)*r);
-	glEnd();														# // Done Torus
-
 
 class GlutonView(QGLWidget):
 
@@ -67,8 +39,8 @@ class GlutonView(QGLWidget):
         self.lastRightFootPos = 0
         self.lastLeftFootPos = 0
 
-        def addServo(name, parent, servo):
-            self.servos[name] = servo
+        def addServo(servoName, parent, servo):
+            self.servos[servoName] = servo
             self.servos[parent].addChild(servo)
 
         addServo('Right Hip',       'root',             SceneGraphNode(QVector3D(1,0,0),      QVector3D(1,0,0),   [1,0.45,0,1]))
@@ -189,8 +161,8 @@ class GlutonView(QGLWidget):
 
 
     def resizeGL(self, width, height):
-        if height == 0:  # Prevent A Divide By Zero If The Window Is Too Small
-            height = 1
+        # Prevent A Divide By Zero If The Window Is Too Small
+        if height == 0: height = 1
 
         glViewport(0, 0, width, height)  # Reset The Current Viewport And Perspective Transformation
         glMatrixMode(GL_PROJECTION)  # // Select The Projection Matrix
@@ -200,8 +172,8 @@ class GlutonView(QGLWidget):
         # Note that the near clip plane is 1 (hither) and the far plane is 1000 (yon)
         gluPerspective(45.0, float(width) / float(height), 1, 100.0)
 
-        glMatrixMode(GL_MODELVIEW);  # // Select The Modelview Matrix
-        glLoadIdentity();  # // Reset The Modelview Matrix
+        glMatrixMode(GL_MODELVIEW)  # // Select The Modelview Matrix
+        glLoadIdentity()  # // Reset The Modelview Matrix
         self.arcBall.setBounds(width, height)  # //*NEW* Update mouse bounds for arcball
 
     def initializeGL(self):
@@ -210,14 +182,12 @@ class GlutonView(QGLWidget):
         glClearDepth(1.0)  # Enables Clearing Of The Depth Buffer
         glDepthFunc(GL_LEQUAL)  # The Type Of Depth Test To Do
         glEnable(GL_DEPTH_TEST)  # Enables Depth Testing
-        glShadeModel(GL_FLAT);  # Select Flat Shading (Nice Definition Of Objects)
+        glShadeModel(GL_FLAT)  # Select Flat Shading (Nice Definition Of Objects)
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)  # Really Nice Perspective Calculations
 
-        self.quadratic = gluNewQuadric();
-        gluQuadricNormals(self.quadratic, GLU_SMOOTH);
-        gluQuadricDrawStyle(self.quadratic, GLU_FILL);
-        # Why? this tutorial never maps any textures?! ?
-        # gluQuadricTexture(self.quadratic, GL_TRUE);			# // Create Texture Coords
+        self.quadratic = gluNewQuadric()
+        gluQuadricNormals(self.quadratic, GLU_SMOOTH)
+        gluQuadricDrawStyle(self.quadratic, GLU_FILL)
 
         glEnable(GL_LIGHT0)
         glEnable(GL_LIGHTING)
@@ -260,9 +230,9 @@ class GlutonView(QGLWidget):
         x = event.x()
         y = event.y()
         if btns & Qt.LeftButton:
-            self.lastRot = copy.copy(self.thisRot);  # // Set Last Static Rotation To Last Dynamic One
+            self.lastRot = copy.copy(self.thisRot)  # // Set Last Static Rotation To Last Dynamic One
             mouse_pt = Point2fT(x, y)
-            self.arcBall.click(mouse_pt);  # // Update Start Vector And Prepare For Dragging
+            self.arcBall.click(mouse_pt)  # // Update Start Vector And Prepare For Dragging
 
 
     def wheelEvent(self, event : QWheelEvent):
@@ -273,19 +243,14 @@ class GlutonView(QGLWidget):
         """
         delta = event.delta()
         if delta == 0: return
-        btns = event.buttons()
         moda = event.modifiers()
         x = event.x()
         y = event.y()
-        self.lastRot = copy.copy(self.thisRot);  # // Set Last Static Rotation To Last Dynamic One
+        self.lastRot = copy.copy(self.thisRot)  # // Set Last Static Rotation To Last Dynamic One
         mouse_pt = Point2fT(x, y)
-        self.arcBall.click(mouse_pt);  # // Update Start Vector And Prepare For Dragging
+        self.arcBall.click(mouse_pt)  # // Update Start Vector And Prepare For Dragging
         if moda & Qt.ShiftModifier : self.doRotate(x, y + delta)
         elif moda & Qt.AltModifier: self.doRotate(x + delta, y)
-        else:
-            self.distance += delta * 0.10
-        #print('delta', delta, 'x', event.x(), 'y', event.y(), 'xx', event.globalX(), 'yy', event.globalY())
+        else: self.distance += delta * 0.10
 
-        self.paintGL()
-        self.swapBuffers()
-        self.repaint()
+        self.glDraw()
