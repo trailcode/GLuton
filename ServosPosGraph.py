@@ -46,23 +46,9 @@ class ServosPosGraph(QGLWidget):
 
         self.closestKey = self.servoAdjustment.getClosestKey()
 
-        glColor3f(1, 1, 1)
-
-        for i,c in list(zip(ani, range(1, 1+len(ani)))):
-
-            if i != self.closestKey:   glPointSize(3)
-            else:                      glPointSize(6)
-
-            glBegin(GL_POINTS)
-            points = ani[i]
-            for t in range(len(points)):
-                if self.servoAdjustment.servoPosGraphShowServo[t]: glVertex2d(i,points[t])
-            glEnd()
-
         keys, values = self.servoAdjustment.getOrderedKeysValues()
 
-        #print('keys', keys)
-        #print('values', values)
+        curves = self.servoAdjustment.curves
 
         def setColorAndLineWidth(index):
             """Change line width depending on current joint being edited"""
@@ -70,6 +56,45 @@ class ServosPosGraph(QGLWidget):
             else:                                               glLineWidth(1)
 
             glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
+
+        for i in range(len(curves)):
+            if not self.servoAdjustment.servoPosGraphShowServo[i]: continue
+            setColorAndLineWidth(i)
+            glBegin(GL_LINE_STRIP)
+            curve = curves[i]
+            xValues = curve[0]
+            yValues = curve[1]
+
+            try:
+                s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
+                           np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
+                x = np.linspace(0, 256, 256)
+                y = splev(x, s)
+
+                for i in range(len(y)): glVertex2f(x[i], y[i])
+
+
+            except:
+                for i in range(len(xValues)):
+                    glVertex2d(xValues[i], yValues[i])
+            glEnd()
+
+            glColor3f(1,1,1)
+            for i in range(len(xValues)):
+                if xValues[i] == self.closestKey:
+                    glPointSize(10)
+                    glBegin(GL_POINTS)
+                    glVertex2f(xValues[i], yValues[i])
+                    glEnd()
+                else:
+                    glPointSize(5)
+                    glBegin(GL_POINTS)
+                    glVertex2f(xValues[i], yValues[i])
+                    glEnd()
+
+        glLineWidth(1)
+
+        return
 
         def do1D_Interpolation(index):
             setColorAndLineWidth(index)

@@ -80,6 +80,23 @@ class GLuton(QMainWindow):
                           60: [127, 125, 93, 162, 127, 127, 127, 19, 232, 89, 127, 127],
                           159: [128, 11, 136, 128, 128, 128, 127, 125, 109, 128, 128, 128]}
 
+        self.animation = {0: [0, 35, 66, 89, 108, 127, 148, 164, 187, 209, 228, 256],
+                          256: [0, 35, 66, 89, 108, 127, 148, 164, 187, 209, 228, 255],
+                          132: [7, 30, 56, 82, 101, 118, 141, 159, 183, 200, 224, 247]}
+
+        #self.curves =  [[[0, 256], [0, 0]], [[0, 256], [35, 35]], [[0, 256], [66, 66]], [[0, 256], [89, 89]], [[0, 256], [108, 108]], [[0, 256], [127, 127]], [[0, 256], [148, 148]], [[0, 256], [164, 164]], [[0, 256], [187, 187]], [[0, 256], [209, 209]], [[0, 256], [228, 228]], [[0, 256], [256, 255]]]
+        self.curves = [[[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]],
+                       [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]],
+                       [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]]]
+
+        self.curves = [[[0, 256], [128, 128]],
+                       [[0, 42, 80, 108, 135, 169, 206, 235, 256], [128, 109, 28, 11, 127, 47, 127, 127, 128]],
+                       [[0, 42, 80, 108, 135, 169, 206, 235, 256], [83, 76, 143, 222, 169, 184, 121, 96, 83]],
+                       [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]],
+                       [[0, 42, 80, 108, 135, 169, 206, 235, 256], [128, 96, 128, 127, 124, 87, 28, 0, 128]],
+                       [[0, 42, 80, 108, 135, 206, 235, 256], [170, 179, 121, 99, 88, 150, 217, 169]],
+                       [[0, 256], [128, 128]], [[0, 256], [128, 128]], [[0, 256], [128, 128]]]
+
         self.setupMenuBarEvents()
 
         self.setupServos()
@@ -126,7 +143,8 @@ class GLuton(QMainWindow):
             print('  self.mins =', self.mins)
             print('  self.maxs =', self.maxs)
             print('  self.offsets =', self.offsets)
-            print('  self.animation =', self.animation)
+            #print('  self.animation =', self.animation)
+            print('  self.curves = ', self.curves)
 
         self.ui.actionSave.triggered.connect(save)
 
@@ -316,7 +334,16 @@ class GLuton(QMainWindow):
         self.ui.keyPosSlider.valueChanged.connect(keyPosChanged)
 
         def deleteCurrKey():
-            self.animation.pop(self.getClosestKey())
+            closestKey = self.getClosestKey()
+            for curve in self.curves:
+                xValues = curve[0]
+                yValues = curve[1]
+                for i in range(len(xValues)):
+                    if xValues[i] != closestKey: continue
+                    del xValues[i]
+                    del yValues[i]
+                    break
+
             self.canvas.glDraw()
 
         self.ui.pushButtonDeleteKey.clicked.connect(deleteCurrKey)
@@ -411,9 +438,6 @@ class GLuton(QMainWindow):
         self.move(frameGm.topLeft())
 
     def getCurrKeyPair(self, value=None, cmp = '>=', justIndex = False):
-        if value is None: value = self.timeSlider.value()
-        keys = list(self.animation.keys())
-        keys.sort()
 
         def getTruth(inp, relate, cut):
             ops = {'>': operator.gt,
@@ -423,6 +447,13 @@ class GLuton(QMainWindow):
                    '=': operator.eq}
             return ops[relate](inp, cut)
 
+        if value is None: value = self.timeSlider.value()
+        keys = set()
+        for i in self.curves:
+            for j in i[0]: keys.add(j)
+
+        keys = list(keys)
+        keys.sort()
         for i in range(len(keys)):
             if getTruth(keys[i], cmp, value):
                 if justIndex: return i
@@ -459,37 +490,22 @@ class GLuton(QMainWindow):
 
         t = self.timeSlider.value()
 
-        if self.interpolationMode == 0:
+        for i in range(len(self.curves)):
+            curve = self.curves[i]
+            xValues = curve[0]
+            yValues = curve[1]
+            try:
+                s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
+                           np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
 
-            for i in range(len(A)):
+                self.servoPositionSliders[i].setValue(splev(t, s))
 
-                try:
-                    s = splrep(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                               np.ndarray(shape=(len(keys),), buffer=np.array(values[i]), dtype=int))
-
-                    self.servoPositionSliders[i].setValue(splev(t, s))
-
-                except:
-
-                    intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
+            except:
+                for j in range(len(xValues)):
+                    if xValues[j] < t: continue
+                    intp = interp1d((xValues[j - 1], xValues[j]), (yValues[j - 1], yValues[j]))
                     self.servoPositionSliders[i].setValue(intp(t))
-        elif self.interpolationMode == 1:
-            for i in range(len(A)):
-
-                try:
-                    s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                         np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
-
-                    self.servoPositionSliders[i].setValue(s(t))
-
-                except:
-
-                    intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                    self.servoPositionSliders[i].setValue(intp(t))
-        else:
-            for i in range(len(A)):
-                intp = interp1d((keyPair[0], keyPair[1]), (A[i], B[i]))
-                self.servoPositionSliders[i].setValue(intp(t))
+                    break
 
         self.inTime = False
 
@@ -535,6 +551,26 @@ class GLuton(QMainWindow):
                 return
 
             t = self.timeSlider.value()
+
+            curve = self.curves[index]
+
+            xValues = curve[0]
+            yValues = curve[1]
+
+            foundIt = False
+
+            for i in range(len(xValues)):
+                if xValues[i] != t: continue
+                foundIt = True
+                yValues[i] = self.servoPositionSliders[index].value()
+                break
+
+            if not foundIt:
+                for i in range(len(xValues)):
+                    if xValues[i] < t: continue
+                    xValues.insert(i, t)
+                    yValues.insert(i, self.servoPositionSliders[index].value())
+                    break
 
             self.animation[t] = []
 
