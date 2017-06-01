@@ -210,7 +210,7 @@ class GLuton(QMainWindow):
             # Create a spin box which is connected to the slider
             spinBox = QSpinBox()
             spinBox.setValue(slider.value())
-            spinBox.setMaximum(255)
+            spinBox.setMaximum(256)
             spinBox.setFixedWidth(45)
 
             # When the slider is changed, reflect the change in the associated spin box
@@ -479,14 +479,8 @@ class GLuton(QMainWindow):
         return (keys, valuesOrdered)
 
     def updateServoSliders(self):
-        keyPair = self.getCurrKeyPair()
-        if keyPair is None: return
+
         self.inTime = True
-
-        A = self.animation[keyPair[0]]
-        B = self.animation[keyPair[1]]
-
-        keys, values = self.getOrderedKeysValues()
 
         t = self.timeSlider.value()
 

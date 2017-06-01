@@ -68,6 +68,8 @@ class GlutonView(QGLWidget):
         addServo('Right Foot',      'Right Ankle',      SceneGraphNode(QVector3D(0.3, 0, 0),  QVector3D(1, 0, 0), [1,0.45,0,1]))
         addServo('Left Foot',       'Left Ankle',       SceneGraphNode(QVector3D(-0.3, 0, 0), QVector3D(1, 0, 0), [0,0.45,1]))
 
+        self.setAngled()
+
     def paintGL(self):
         self.makeCurrent()
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>927</width>
+    <width>1058</width>
     <height>593</height>
    </rect>
   </property>
@@ -18,8 +18,14 @@
     <bool>true</bool>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="margin">
+     <number>2</number>
+    </property>
     <item>
      <layout class="QVBoxLayout" name="glutonViewLayout">
+      <property name="spacing">
+       <number>1</number>
+      </property>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_10">
         <property name="spacing">
@@ -129,7 +135,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>927</width>
+     <width>1058</width>
      <height>22</height>
     </rect>
    </property>
@@ -160,12 +166,70 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <layout class="QVBoxLayout" name="verticalLayout_8">
+     <property name="spacing">
+      <number>1</number>
+     </property>
+     <property name="margin">
+      <number>2</number>
+     </property>
      <item>
-      <layout class="QHBoxLayout" name="canvasLayout">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMinAndMaxSize</enum>
+      <layout class="QVBoxLayout" name="canvasLayout">
+       <property name="spacing">
+        <number>1</number>
        </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>-1</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="addButton">
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="delButton">
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Del</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="moveButton">
+           <property name="maximumSize">
+            <size>
+             <width>60</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Move</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </item>
     </layout>
@@ -846,9 +910,6 @@
      </item>
     </layout>
     <zorder>groupBox</zorder>
-    <zorder>keyPosSlider</zorder>
-    <zorder>keyPosLabel</zorder>
-    <zorder>verticalLayoutWidget</zorder>
     <zorder>verticalSpacer</zorder>
    </widget>
   </widget>
