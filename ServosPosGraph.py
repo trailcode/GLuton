@@ -39,7 +39,9 @@ class ServosPosGraph(QGLWidget):
 
         def setMode(mode): self.mode = mode
 
-        self.gluton.ui.delButton.clicked.connect(lambda: setMode(Mode.DELETE))
+        self.gluton.ui.delButton    .clicked.connect(lambda: setMode(Mode.DELETE))
+        self.gluton.ui.addButton    .clicked.connect(lambda: setMode(Mode.ADD))
+        self.gluton.ui.moveButton   .clicked.connect(lambda: setMode(Mode.MOVE))
 
     def paintGL(self):
         self.makeCurrent()
@@ -123,89 +125,6 @@ class ServosPosGraph(QGLWidget):
             self.closestKeyValuePos[2].glVertexf()
             glEnd()
 
-        return
-
-        def do1D_Interpolation(index):
-            setColorAndLineWidth(index)
-
-            glBegin(GL_LINE_STRIP)
-
-            r = list(range(0, 256, 16)) + list(ani.keys())
-            r.sort()
-            for i in r:
-                keyPair = self.gluton.getCurrKeyPair(value=i)
-                if keyPair is None: continue
-                A = ani[keyPair[0]]
-                B = ani[keyPair[1]]
-                intp = interp1d((keyPair[0], keyPair[1]), (A[index], B[index]))
-                glVertex2d(i, intp(i))
-
-            glEnd()
-
-        if self.servoAdjustment.interpolationMode == 0:
-            index = 0
-            for i in values:
-                if self.servoAdjustment.servoPosGraphShowServo[index]:
-                    setColorAndLineWidth(index)
-
-                    try:
-                        s = splrep( np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                    np.ndarray(shape=(len(keys),), buffer=np.array(i),    dtype=int))
-                        x = np.linspace(0, 256, 256)
-                        y = splev(x, s)
-                        glBegin(GL_LINE_STRIP)
-                        for i in range(len(y)): glVertex2f(x[i], y[i])
-                        glEnd()
-
-                    except: do1D_Interpolation(index)
-                index += 1
-
-        elif self.servoAdjustment.interpolationMode == 1:
-            index = 0
-            for i in values:
-                if self.servoAdjustment.servoPosGraphShowServo[index]:
-                    setColorAndLineWidth(index)
-
-                    try:
-                        s = UnivariateSpline(np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                             np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int), s=100)
-
-                        x = np.linspace(0, 256, 256)
-                        y = s(x)
-                        glBegin(GL_LINE_STRIP)
-                        for i in range(len(y)): glVertex2f(x[i], y[i])
-                        glEnd()
-
-                    except:
-                        do1D_Interpolation(index)
-                index += 1
-            """
-            elif self.servoAdjustment.interpolationMode == 2:
-            index = 0
-            for i in values:
-                setColorAndLineWidth(index)
-
-                try:
-                    s = InterpolatedUnivariateSpline(   np.ndarray(shape=(len(keys),), buffer=np.array(keys), dtype=int),
-                                                        np.ndarray(shape=(len(keys),), buffer=np.array(i), dtype=int))
-
-                    x = np.linspace(0, 256, 256)
-                    y = s(x)
-                    glBegin(GL_LINE_STRIP)
-                    for i in range(len(y)): glVertex2f(x[i], y[i])
-                    glEnd()
-
-                except:
-                    do1D_Interpolation(index)
-                index += 1
-            """
-        else:
-        #if True:
-            for j in range(len(self.servoAdjustment.animation[0])): do1D_Interpolation(j)
-
-        glLineWidth(1)
-
-
     def resizeGL(self, w: int, h: int):
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
@@ -257,6 +176,7 @@ class ServosPosGraph(QGLWidget):
         self.closestKeyValuePos = None
 
         for i in range(len(self.gluton.curves)):
+            if not self.gluton.servoPosGraphShowServo[i]: continue
             curve = self.gluton.curves[i]
             for j in range(len(curve[0])):
                 p = QVector2D(curve[0][j], curve[1][j])
