@@ -33,12 +33,33 @@ class ServosPosGraph(QGLWidget):
         self.gluton = gluton
         self.colors = [(70,128,50),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
                        (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)] # Move to Gluton.py
+
+        #"""
+        self.colors = [
+            (87, 87, 87), # Dk. Gray
+            (173, 35, 35), # Red
+            (42, 75, 215), # Blue
+            (29, 105, 20), # Green
+            (129, 74, 25), # Brown
+            (129, 38, 192), # Purple
+            (160, 160, 160), # Lt. Gray
+            (129, 197, 122), # Lt. Green
+            (157, 175, 255), # Lt. Blue
+            (41, 208, 208), # Cyan
+            (255, 146, 51), # Orange
+            (255, 238, 51), # Yellow
+            (233, 222, 187), # Tan
+            (255, 205, 243), # Pink
+            (255, 255, 255), # White
+        ]
+        #"""
+
         self.setMouseTracking(True)
         self.closestKey = 0
-        self.cursor = (0,0)
         self.closestKeyValuePos = None
         self.closestCurveIndex = None
         self.mode = Mode.NORMAL
+        self.copyBuffer = None
 
         def setMode(mode): self.mode = mode
 
@@ -65,6 +86,7 @@ class ServosPosGraph(QGLWidget):
         glOrtho(-padd, 256 + padd, -padd, 256 + padd, -50.0, 50.0)
 
         t = self.gluton.timeSlider.value()
+        glClearColor(0.1,0.1,0.1,1)
         glClear(GL_COLOR_BUFFER_BIT)
         glColor3f(0.0, 0.0, 1.0)
         glRectf(-5, -5, 5, 5)
@@ -82,30 +104,41 @@ class ServosPosGraph(QGLWidget):
 
         curves = self.gluton.curves
 
+        #print('self.closestCurveIndex', self.closestCurveIndex, 'self.closestKeyValuePos', self.closestKeyValuePos)
+
         def setColorAndLineWidth(index):
 
-            if self.closestCurveIndex is not None:
-                if self.closestCurveIndex == index:         glLineWidth(4)
-                else:                                       glLineWidth(1)
-            elif self.closestKeyValuePos is not None:
-                if self.closestKeyValuePos[0] == index:     glLineWidth(4)
-                else:                                       glLineWidth(1)
-            elif index == self.gluton.currBeingEdited:      glLineWidth(4)
-            else:                                           glLineWidth(1)
+            smallWidth = 2
+            fatWidth = 4
 
-            glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
+            if self.closestCurveIndex is not None:
+                if self.closestCurveIndex == index:         glLineWidth(fatWidth)
+                else:                                       glLineWidth(smallWidth)
+            elif self.closestKeyValuePos is not None:
+                if self.closestKeyValuePos[0] == index:     glLineWidth(fatWidth)
+                else:                                       glLineWidth(smallWidth)
+            elif index == self.gluton.currBeingEdited:      glLineWidth(fatWidth)
+            else:                                           glLineWidth(smallWidth)
+
+            glColor3f(self.colors[index][0] / 255.0, self.colors[index][1] / 255.0, self.colors[index][2] / 255.0)
+
+            if self.gluton.servoPosGraphShowServo[index]:
+                glDisable(GL_LINE_STIPPLE)
+
+            else:
+                #glColor3f(self.colors[index][0] * 0.1, self.colors[index][1] * 0.1, self.colors[index][2] * 0.1)
+                #glColor3f(1,0,0)
+                glLineStipple(3, 0xAAAA)
+                glEnable(GL_LINE_STIPPLE)
 
         self.interpolatedCurves = []
 
-        for i in range(len(curves)):
+        for curveIndex in range(len(curves)):
             points = []
-            if not self.gluton.servoPosGraphShowServo[i]:
-                self.interpolatedCurves += [None]
-                continue
 
-            setColorAndLineWidth(i)
+            setColorAndLineWidth(curveIndex)
             glBegin(GL_LINE_STRIP)
-            curve = curves[i]
+            curve = curves[curveIndex]
             xValues = curve[0]
             yValues = curve[1]
 
@@ -125,7 +158,8 @@ class ServosPosGraph(QGLWidget):
                     points += [(xValues[i], yValues[i])]
             glEnd()
 
-            self.interpolatedCurves += [LineString(points)]
+            if self.gluton.servoPosGraphShowServo[curveIndex]:  self.interpolatedCurves += [LineString(points)]
+            else:                                               self.interpolatedCurves += [None]
 
             glColor3f(1,1,1)
             for i in range(len(xValues)):
@@ -173,8 +207,19 @@ class ServosPosGraph(QGLWidget):
         recursive_set(self)
 
     def mousePressEvent(self, event):
-        if self.closestKeyValuePos is None: return
         if not event.buttons() & Qt.LeftButton: return
+
+        if self.mode == Mode.COPY:
+            if self.closestCurveIndex is None: return
+            self.copyBuffer = self.gluton.curves[self.closestCurveIndex].copy()
+
+        if self.mode == Mode.PASTE:
+            if self.closestCurveIndex is None or self.copyBuffer is None: return
+            self.gluton.curves[self.closestCurveIndex] = self.copyBuffer.copy()
+            self.gluton.updateServoSliders()
+            self.glDraw()
+
+        if self.closestKeyValuePos is None: return
 
         if self.mode == Mode.DELETE:
             (i, j, k) = self.closestKeyValuePos
@@ -183,15 +228,17 @@ class ServosPosGraph(QGLWidget):
             self.mouseMoveEvent(event)
             self.glDraw()
 
-
     def mouseMoveEvent(self, event: QMouseEvent):
+
+        if self.mode == Mode.NORMAL: return
 
         model = glGetDoublev(GL_MODELVIEW_MATRIX)
         proj = glGetDoublev(GL_PROJECTION_MATRIX)
         view = glGetIntegerv(GL_VIEWPORT)
         objx, objy, objz = gluUnProject(event.x(), self.height() - event.y(), 0, model, proj, view)
 
-        self.cursor = (objx, objy)
+        if event.buttons() & Qt.LeftButton:
+            print("drag")
 
         minDist = sys.float_info.max
 
@@ -210,7 +257,11 @@ class ServosPosGraph(QGLWidget):
                     self.closestKeyValuePos = (i, j, p)
                     minDist = dist
 
-        elif self.mode == Mode.TRANSLATE or self.mode == Mode.SELECT:
+        elif (  self.mode == Mode.TRANSLATE or
+                self.mode == Mode.SELECT or
+                self.mode == Mode.COPY or
+                self.mode == Mode.PASTE):
+
             mousePos = Point(objx, objy)
 
             for i in range(len(self.interpolatedCurves)):
