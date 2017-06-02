@@ -17,6 +17,9 @@ class Mode(IntEnum):
     MOVE        = 2
     ADD         = 3
     TRANSLATE   = 4
+    SELECT      = 5
+    COPY        = 6
+    PASTE       = 7
 
 class ServosPosGraph(QGLWidget):
     def __init__(self, gluton, parent = None):
@@ -39,10 +42,13 @@ class ServosPosGraph(QGLWidget):
 
         def setMode(mode): self.mode = mode
 
-        self.gluton.ui.delButton    .clicked.connect(lambda: setMode(Mode.DELETE))
-        self.gluton.ui.addButton    .clicked.connect(lambda: setMode(Mode.ADD))
-        self.gluton.ui.moveButton   .clicked.connect(lambda: setMode(Mode.MOVE))
-        self.gluton.ui.transButton  .clicked.connect(lambda: setMode(Mode.TRANSLATE))
+        self.gluton.ui.delButton            .clicked.connect(lambda: setMode(Mode.DELETE))
+        self.gluton.ui.addButton            .clicked.connect(lambda: setMode(Mode.ADD))
+        self.gluton.ui.moveButton           .clicked.connect(lambda: setMode(Mode.MOVE))
+        self.gluton.ui.transButton          .clicked.connect(lambda: setMode(Mode.TRANSLATE))
+        self.gluton.ui.selectButton         .clicked.connect(lambda: setMode(Mode.SELECT))
+        self.gluton.ui.copyKeyValuesButton  .clicked.connect(lambda: setMode(Mode.COPY))
+        self.gluton.ui.pasteKeyValuesButton .clicked.connect(lambda: setMode(Mode.PASTE))
 
         self.interpolatedCurves = []
 

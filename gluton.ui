@@ -190,6 +190,27 @@
           <number>0</number>
          </property>
          <item>
+          <widget class="QToolButton" name="selectButton">
+           <property name="text">
+            <string>Select</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="copyKeyValuesButton">
+           <property name="text">
+            <string>Copy</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="pasteKeyValuesButton">
+           <property name="text">
+            <string>Paste</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QToolButton" name="addButton">
            <property name="text">
             <string>Add</string>
