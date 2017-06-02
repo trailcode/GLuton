@@ -52,6 +52,8 @@ class ServosPosGraph(QGLWidget):
 
         self.interpolatedCurves = []
 
+        self.glutonView = self.gluton.glutonCanvas # type: GlutonView
+
     def paintGL(self):
         self.makeCurrent()
 
@@ -208,7 +210,7 @@ class ServosPosGraph(QGLWidget):
                     self.closestKeyValuePos = (i, j, p)
                     minDist = dist
 
-        elif self.mode == Mode.TRANSLATE or self.mode == Mode.ADD:
+        elif self.mode == Mode.TRANSLATE or self.mode == Mode.SELECT:
             mousePos = Point(objx, objy)
 
             for i in range(len(self.interpolatedCurves)):
@@ -218,10 +220,14 @@ class ServosPosGraph(QGLWidget):
                 minDist = dist
                 self.closestCurveIndex = i
 
+            self.glutonView.highlightServo(self.gluton.servoNames[self.closestCurveIndex])
+            self.glutonView.glDraw()
+
         self.glDraw()
 
     def leaveEvent(self, event):
         self.closestKeyValuePos = None
         self.closestCurveIndex = None
+        self.glutonView.unhighlightLastServo()
         self.glDraw()
         return super(ServosPosGraph, self).enterEvent(event)

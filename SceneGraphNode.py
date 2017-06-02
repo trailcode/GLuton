@@ -20,6 +20,7 @@ class SceneGraphNode:
         self.angleOffset = 0
         self.color = color
         self.position = QVector3D(0.0, 0.0, 0.0)
+        self.highlighted = False
 
     def setAngle(self, angle: float):
         self.angle = angle + self.angleOffset
@@ -73,7 +74,8 @@ class SceneGraphNode:
         glEnable(GL_LIGHTING)
         glPushMatrix()
         self.position.glTranslatef()
-        glColor4f(self.color[0], self.color[1], self.color[2], 1)
+        if self.highlighted:    glColor4f(1, 1, 0.3, 1)
+        else:                   glColor4f(self.color[0], self.color[1], self.color[2], 0.6)
         glMultMatrixf(self.mm.data())
         glutSolidCube(0.2)
         glPopMatrix()

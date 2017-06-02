@@ -37,9 +37,9 @@ class GLuton(QMainWindow):
 
         self.setWindowTitle('Gluton')
         self.sliders = []
+        self.glutonCanvas = GlutonView(self)
         self.canvas = ServosPosGraph(self)
         self.ui.canvasLayout.addWidget(self.canvas)
-        self.glutonCanvas = GlutonView(self)
         self.ui.glutonViewLayout.addWidget(self.glutonCanvas)
 
         self.settingKeyPos = False
@@ -198,7 +198,13 @@ class GLuton(QMainWindow):
                 def enterEvent(self, event: QEvent):
                     """Take note of the current servo being edit when the mouse enters this widget and update display"""
                     self.gluton.currBeingEdited = self.number
+                    self.gluton.glutonCanvas.highlightServo(self.gluton.servoNames[self.number])
+                    self.gluton.glutonCanvas.glDraw()
                     self.gluton.canvas.glDraw()
+
+                def leaveEvent(self, event: QEvent):
+                    self.gluton.glutonCanvas.unhighlightLastServo()
+                    self.gluton.glutonCanvas.glDraw()
 
             slider = ServoSlider(self, Qt.Horizontal)  # Create the slider
             slider.setMaximum(256)

@@ -44,6 +44,7 @@ class GlutonView(QGLWidget):
 
         self.rightFootPoints = deque(maxlen=512)
         self.leftFootPoints = deque(maxlen=512)
+        self.lastHighlightedServo = None # type: SceneGraphNode
 
         def addServo(servoName, parentServo, servo):
             self.servos[servoName] = servo
@@ -124,7 +125,14 @@ class GlutonView(QGLWidget):
 
         glTranslatef(0, heightDiff, 0)
 
+        """
+        if self.lastHighlightedServo is not None:
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        """
         self.root.render()
+
+        #glDisable(GL_BLEND)
 
         glPopMatrix()
 
@@ -137,13 +145,6 @@ class GlutonView(QGLWidget):
             glTranslatef(self.gridTranslation[0], 0, self.gridTranslation[1])
             self.rightFootPoints.append((A.x(), A.y() + heightDiff, A.z() - self.gridTranslation[1]))
             self.leftFootPoints.append((B.x(), B.y() + heightDiff, B.z() - self.gridTranslation[1]))
-
-
-        if delta > 0:
-            #self.rightFootPoints = []
-            #self.leftFootPoints = []
-            pass
-
 
         self.drawGroundGrid()
 
@@ -332,3 +333,12 @@ class GlutonView(QGLWidget):
 
         self.moveGrid = state != 0
         self.glDraw()
+
+    def unhighlightLastServo(self):
+        if self.lastHighlightedServo is not None: self.lastHighlightedServo.highlighted = False
+
+    def highlightServo(self, servoName):
+        if servoName == 'time': return
+        self.unhighlightLastServo()
+        self.lastHighlightedServo = self.servos[servoName]
+        self.lastHighlightedServo.highlighted = True

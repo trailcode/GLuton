@@ -781,7 +781,11 @@
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayoutServoPositions"/>
+      <layout class="QVBoxLayout" name="verticalLayoutServoPositions">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+      </layout>
      </item>
      <item>
       <layout class="QVBoxLayout" name="horizontalLayoutTime"/>
