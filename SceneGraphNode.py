@@ -1,6 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.raw.GLUT import *
 from PyQt4.QtGui import QVector3D, QMatrix4x4
+import util
 
 class SceneGraphNode:
     """Class representing a scene graph node representing a servo. The servo can rotation around a defined axis"""
@@ -48,7 +49,7 @@ class SceneGraphNode:
         # Need to make a copy of the position offset because it is going to be changed.
         p = self.positionOffset
 
-        self.rotationMatrix.rotate(parentAngle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z())
+        self.rotationMatrix.rotate(parentAngle, rotationAxis)
         self.rotationMatrix = self.rotationMatrix * parentM
         p *= self.rotationMatrix
         p += self.parentPos
@@ -66,12 +67,12 @@ class SceneGraphNode:
         glColor4f(0, 1, 0.75, 1)
         glLineWidth(3)
         glBegin(GL_LINES)
-        glVertex3f(self.parentPos.x(), self.parentPos.y(), self.parentPos.z())
-        glVertex3f(self.position.x(), self.position.y(), self.position.z())
+        self.parentPos.glVertexf()
+        self.position.glVertexf()
         glEnd()
         glEnable(GL_LIGHTING)
         glPushMatrix()
-        glTranslatef(self.position.x(), self.position.y(), self.position.z())
+        self.position.glTranslatef()
         glColor4f(self.color[0], self.color[1], self.color[2], 1)
         glMultMatrixf(self.mm.data())
         glutSolidCube(0.2)

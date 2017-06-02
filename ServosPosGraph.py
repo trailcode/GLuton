@@ -5,19 +5,18 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt4.QtCore import QObject, Qt
 from PyQt4.QtGui import *
+from shapely.geometry import LineString, Point
 from scipy.interpolate import interp1d
 from scipy.interpolate import splrep, splev, UnivariateSpline, InterpolatedUnivariateSpline
 import numpy as np
-
-def myGlVertex2f(self): glVertex2f(self.x(), self.y())
-
-QVector2D.glVertexf = myGlVertex2f
+import util
 
 class Mode(IntEnum):
-    NORMAL  = 0
-    DELETE  = 1
-    MOVE    = 2
-    ADD     = 3
+    NORMAL      = 0
+    DELETE      = 1
+    MOVE        = 2
+    ADD         = 3
+    TRANSLATE   = 4
 
 class ServosPosGraph(QGLWidget):
     def __init__(self, gluton, parent = None):
@@ -34,7 +33,8 @@ class ServosPosGraph(QGLWidget):
         self.setMouseTracking(True)
         self.closestKey = 0
         self.cursor = (0,0)
-        self.closestKeyValuePos = None # type: QVector2D
+        self.closestKeyValuePos = None
+        self.closestCurveIndex = None
         self.mode = Mode.NORMAL
 
         def setMode(mode): self.mode = mode
@@ -42,6 +42,9 @@ class ServosPosGraph(QGLWidget):
         self.gluton.ui.delButton    .clicked.connect(lambda: setMode(Mode.DELETE))
         self.gluton.ui.addButton    .clicked.connect(lambda: setMode(Mode.ADD))
         self.gluton.ui.moveButton   .clicked.connect(lambda: setMode(Mode.MOVE))
+        self.gluton.ui.transButton  .clicked.connect(lambda: setMode(Mode.TRANSLATE))
+
+        self.interpolatedCurves = []
 
     def paintGL(self):
         self.makeCurrent()
@@ -72,17 +75,26 @@ class ServosPosGraph(QGLWidget):
         curves = self.gluton.curves
 
         def setColorAndLineWidth(index):
-            """Change line width depending on current joint being edited"""
-            if self.closestKeyValuePos is not None:
-                if self.closestKeyValuePos[0] == index:         glLineWidth(4)
-                else:                                           glLineWidth(1)
-            elif index == self.gluton.currBeingEdited: glLineWidth(4)
-            else:                                               glLineWidth(1)
+
+            if self.closestCurveIndex is not None:
+                if self.closestCurveIndex == index:         glLineWidth(4)
+                else:                                       glLineWidth(1)
+            elif self.closestKeyValuePos is not None:
+                if self.closestKeyValuePos[0] == index:     glLineWidth(4)
+                else:                                       glLineWidth(1)
+            elif index == self.gluton.currBeingEdited:      glLineWidth(4)
+            else:                                           glLineWidth(1)
 
             glColor3f(self.colors[index][0], self.colors[index][1], self.colors[index][2])
 
+        self.interpolatedCurves = []
+
         for i in range(len(curves)):
-            if not self.gluton.servoPosGraphShowServo[i]: continue
+            points = []
+            if not self.gluton.servoPosGraphShowServo[i]:
+                self.interpolatedCurves += [None]
+                continue
+
             setColorAndLineWidth(i)
             glBegin(GL_LINE_STRIP)
             curve = curves[i]
@@ -95,13 +107,17 @@ class ServosPosGraph(QGLWidget):
                 x = np.linspace(0, 256, 256)
                 y = splev(x, s)
 
-                for i in range(len(y)): glVertex2f(x[i], y[i])
-
+                for i in range(len(y)):
+                    glVertex2f(x[i], y[i])
+                    points += [(x[i], y[i])]
 
             except:
                 for i in range(len(xValues)):
                     glVertex2d(xValues[i], yValues[i])
+                    points += [(xValues[i], yValues[i])]
             glEnd()
+
+            self.interpolatedCurves += [LineString(points)]
 
             glColor3f(1,1,1)
             for i in range(len(xValues)):
@@ -167,26 +183,39 @@ class ServosPosGraph(QGLWidget):
         view = glGetIntegerv(GL_VIEWPORT)
         objx, objy, objz = gluUnProject(event.x(), self.height() - event.y(), 0, model, proj, view)
 
-        mousePos = QVector2D(objx, objy)
-
         self.cursor = (objx, objy)
 
         minDist = sys.float_info.max
 
         self.closestKeyValuePos = None
+        self.closestCurveIndex = None
 
-        for i in range(len(self.gluton.curves)):
-            if not self.gluton.servoPosGraphShowServo[i]: continue
-            curve = self.gluton.curves[i]
-            for j in range(len(curve[0])):
-                p = QVector2D(curve[0][j], curve[1][j])
-                dist = (mousePos - p).length()
-                if dist > 20 or dist > minDist: continue
-                self.closestKeyValuePos = (i, j, p)
+        if self.mode == Mode.DELETE or self.mode == Mode.MOVE:
+            mousePos = QVector2D(objx, objy)
+            for i in range(len(self.gluton.curves)):
+                if not self.gluton.servoPosGraphShowServo[i]: continue
+                curve = self.gluton.curves[i]
+                for j in range(len(curve[0])):
+                    p = QVector2D(curve[0][j], curve[1][j])
+                    dist = (mousePos - p).length()
+                    if dist > 20 or dist > minDist: continue
+                    self.closestKeyValuePos = (i, j, p)
+                    minDist = dist
+
+        elif self.mode == Mode.TRANSLATE or self.mode == Mode.ADD:
+            mousePos = Point(objx, objy)
+
+            for i in range(len(self.interpolatedCurves)):
+                if self.interpolatedCurves[i] is None: continue
+                dist = mousePos.distance(self.interpolatedCurves[i])
+                if dist > minDist: continue
                 minDist = dist
+                self.closestCurveIndex = i
 
         self.glDraw()
 
     def leaveEvent(self, event):
         self.closestKeyValuePos = None
+        self.closestCurveIndex = None
+        self.glDraw()
         return super(ServosPosGraph, self).enterEvent(event)

@@ -190,41 +190,30 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QPushButton" name="addButton">
-           <property name="maximumSize">
-            <size>
-             <width>50</width>
-             <height>20</height>
-            </size>
-           </property>
+          <widget class="QToolButton" name="addButton">
            <property name="text">
             <string>Add</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="delButton">
-           <property name="maximumSize">
-            <size>
-             <width>50</width>
-             <height>20</height>
-            </size>
-           </property>
+          <widget class="QToolButton" name="delButton">
            <property name="text">
             <string>Del</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="moveButton">
-           <property name="maximumSize">
-            <size>
-             <width>60</width>
-             <height>20</height>
-            </size>
-           </property>
+          <widget class="QToolButton" name="moveButton">
            <property name="text">
             <string>Move</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="transButton">
+           <property name="text">
+            <string>Trans</string>
            </property>
           </widget>
          </item>
