@@ -135,6 +135,8 @@ class GLuton(QMainWindow):
 
         self.showMaximized()
 
+        QtGui.qApp.installEventFilter(self)
+
         #splash.hide()
 
     def setupMenuBarEvents(self):
@@ -373,21 +375,29 @@ class GLuton(QMainWindow):
 
         self.ui.pasteButton.clicked.connect(paste)
 
+    def playPause(self):
+        if self.playing:
+            self.timer.stop()
+            self.ui.playButton.setText(">")
+        else:
+            self.timer.start(self.ui.intervalSpinBox.value())
+            self.ui.playButton.setText("||")
+        self.playing = not self.playing
+
+    def eventFilter(self, source, event):
+        if self.pythonshell.underMouse() and self.pythonshell.hasFocus(): return super(GLuton, self).eventFilter(source,
+                                                                                                                 event)
+
+        if event.type() == QEvent.KeyPress and event.key() == 32: self.playPause()
+
+        return super(GLuton, self).eventFilter(source, event)
+
     def setupPlayAnimationEvents(self):
 
         self.timer = QTimer()
         self.timer.timeout.connect(lambda: self.timeSlider.setValue((self.timeSlider.value() + self.ui.stepSpinBox.value()) % self.timeSlider.maximum()))
 
-        def playPause():
-            if self.playing:
-                self.timer.stop()
-                self.ui.playButton.setText(">")
-            else:
-                self.timer.start(self.ui.intervalSpinBox.value())
-                self.ui.playButton.setText("||")
-            self.playing = not self.playing
-
-        self.ui.playButton.clicked.connect(playPause)
+        self.ui.playButton.clicked.connect(self.playPause)
 
         self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
 

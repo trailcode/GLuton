@@ -60,6 +60,7 @@ class ServosPosGraph(QGLWidget):
         self.closestCurveIndex = None
         self.mode = Mode.NORMAL
         self.copyBuffer = None
+        self.lastClickPos = None # type: QVector2D
 
         def setMode(mode): self.mode = mode
 
@@ -126,8 +127,6 @@ class ServosPosGraph(QGLWidget):
                 glDisable(GL_LINE_STIPPLE)
 
             else:
-                #glColor3f(self.colors[index][0] * 0.1, self.colors[index][1] * 0.1, self.colors[index][2] * 0.1)
-                #glColor3f(1,0,0)
                 glLineStipple(3, 0xAAAA)
                 glEnable(GL_LINE_STIPPLE)
 
@@ -206,8 +205,17 @@ class ServosPosGraph(QGLWidget):
         QWidget.setMouseTracking(self, flag)
         recursive_set(self)
 
+    def getWC_Pos(self, x, y):
+        model = glGetDoublev(GL_MODELVIEW_MATRIX)
+        proj = glGetDoublev(GL_PROJECTION_MATRIX)
+        view = glGetIntegerv(GL_VIEWPORT)
+        objX, objY, objZ = gluUnProject(x, self.height() - y, 0, model, proj, view)
+        return QVector2D(objX, objY)
+
     def mousePressEvent(self, event):
         if not event.buttons() & Qt.LeftButton: return
+
+        self.lastClickPos = self.getWC_Pos(event.x(), event.y())
 
         if self.mode == Mode.COPY:
             if self.closestCurveIndex is None: return
@@ -232,13 +240,22 @@ class ServosPosGraph(QGLWidget):
 
         if self.mode == Mode.NORMAL: return
 
-        model = glGetDoublev(GL_MODELVIEW_MATRIX)
-        proj = glGetDoublev(GL_PROJECTION_MATRIX)
-        view = glGetIntegerv(GL_VIEWPORT)
-        objx, objy, objz = gluUnProject(event.x(), self.height() - event.y(), 0, model, proj, view)
+        mousePos = self.getWC_Pos(event.x(), event.y())
 
         if event.buttons() & Qt.LeftButton:
-            print("drag")
+            if self.lastClickPos is None:
+                self.lastClickPos = mousePos
+                return
+
+            diff = mousePos - self.lastClickPos
+
+            for i in range(len(self.gluton.curves)):
+                if not self.gluton.servoPosGraphShowServo[i]: continue
+
+
+            self.lastClickPos = mousePos
+
+            return
 
         minDist = sys.float_info.max
 
@@ -246,7 +263,6 @@ class ServosPosGraph(QGLWidget):
         self.closestCurveIndex = None
 
         if self.mode == Mode.DELETE or self.mode == Mode.MOVE:
-            mousePos = QVector2D(objx, objy)
             for i in range(len(self.gluton.curves)):
                 if not self.gluton.servoPosGraphShowServo[i]: continue
                 curve = self.gluton.curves[i]
@@ -262,7 +278,7 @@ class ServosPosGraph(QGLWidget):
                 self.mode == Mode.COPY or
                 self.mode == Mode.PASTE):
 
-            mousePos = Point(objx, objy)
+            mousePos = Point(mousePos.x(), mousePos.y())
 
             for i in range(len(self.interpolatedCurves)):
                 if self.interpolatedCurves[i] is None: continue
