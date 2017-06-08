@@ -110,7 +110,7 @@ class ServosPosGraph(QGLWidget):
         def setColorAndLineWidth(index):
 
             smallWidth = 2
-            fatWidth = 4
+            fatWidth = 5
 
             if self.closestCurveIndex is not None:
                 if self.closestCurveIndex == index:         glLineWidth(fatWidth)
@@ -142,6 +142,7 @@ class ServosPosGraph(QGLWidget):
             yValues = curve[1]
 
             try:
+                dasdd
                 s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
                            np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
                 x = np.linspace(0, 256, 256)
