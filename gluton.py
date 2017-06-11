@@ -392,8 +392,9 @@ class GLuton(QMainWindow):
             """Copies key previous to the current time and inserts it at the current time."""
             pair = self.getCurrKeyPair()
             if pair is None: return
-            ani = self.animation[pair[0]]
-            for i in range(len(ani)): self.servoPositionSliders[i].setValue(ani[i])
+
+            values = self.getServoValues(pair[0])
+            for i in range(len(self.curves)): self.servoPositionSliders[i].setValue(values[i])
 
         self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
 
@@ -563,12 +564,8 @@ class GLuton(QMainWindow):
         keys.sort()
         return (keys, valuesOrdered)
 
-    def updateServoSliders(self):
-
-        self.inTime = True
-
-        t = self.timeSlider.value()
-
+    def getServoValues(self, t):
+        ret = []
         for i in range(len(self.curves)):
             curve = self.curves[i]
             xValues = curve[0]
@@ -578,14 +575,25 @@ class GLuton(QMainWindow):
                 s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
                            np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
 
-                self.servoPositionSliders[i].setValue(splev(t, s))
+                ret += [splev(t, s)]
 
             except:
                 for j in range(len(xValues)):
                     if xValues[j] < t: continue
                     intp = interp1d((xValues[j - 1], xValues[j]), (yValues[j - 1], yValues[j]))
-                    self.servoPositionSliders[i].setValue(intp(t))
+                    ret += [intp(t)]
                     break
+        return ret
+
+    def updateServoSliders(self):
+
+        self.inTime = True
+
+        t = self.timeSlider.value()
+
+        values = self.getServoValues(t)
+
+        for i in range(len(self.curves)): self.servoPositionSliders[i].setValue(values[i])
 
         self.inTime = False
 
