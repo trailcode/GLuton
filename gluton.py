@@ -59,6 +59,7 @@ class GLuton(QMainWindow):
         self.timeLabel = None   # type: QSlider
         self.timer = None       # type: QTimer
         self.servoPosGraphShowServo = []
+        self.servoEnabledState = []
         self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
                            'time']
@@ -249,7 +250,9 @@ class GLuton(QMainWindow):
 
     def setupServos(self):
         """Create the sliders for the servos and time slider, labels and spin boxes. Connect events to glue logic"""
-        for sliderName in self.servoNames: self.servoPosGraphShowServo += [True]
+        for sliderName in self.servoNames:
+            self.servoPosGraphShowServo += [True]
+            self.servoEnabledState      += [False]
 
         # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
         for sliderName, index in zip(self.servoNames, range(0, len(self.servoNames))):
@@ -299,12 +302,24 @@ class GLuton(QMainWindow):
             spinBox.valueChanged.connect(lambda value, s=slider: valueChanged(s, value))
 
             box = QHBoxLayout()
+
+            if sliderName != 'time':
+                def enabledStateChanged(sliderIndex, state):
+                    self.servoEnabledState[sliderIndex] = state != 0
+                    self.canvas.glDraw()
+
+                servoEnabled = QCheckBox()
+                servoEnabled.setChecked(False)
+                servoEnabled.stateChanged.connect(lambda state, sliderName=sliderName: enabledStateChanged(self.servoNames.index(sliderName), state))
+                box.addWidget(servoEnabled)
+
             label = QLabel()
             label.setText(sliderName + ':')
             label.setFixedWidth(100)
             label.setMaximumHeight(15)
             label.setAlignment(Qt.AlignRight)
             box.addWidget(label)
+
             slider.setMaximumHeight(15)
             spinBox.setMaximumHeight(15)
             box.addWidget(slider)
@@ -656,7 +671,7 @@ class GLuton(QMainWindow):
                     pass
                 #self.setServo(index, (value / 255.0) - 0.5)
 
-                if not self.servoPosGraphShowServo[index]: self.setServo(index, (value / 255.0) - 0.5)
+                if self.servoEnabledState[index]: self.setServo(index, (value / 255.0) - 0.5)
 
                 #self.glutonCanvas.servos[self.names[index]].setAngle(v)
                 self.glutonCanvas.servos[self.servoNames[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
