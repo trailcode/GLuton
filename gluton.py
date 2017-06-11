@@ -445,6 +445,12 @@ class GLuton(QMainWindow):
 
         self.ui.pasteButton.clicked.connect(paste)
 
+        def keyAll():
+            for i in range(len(self.curves)): self.servoSliderChanged(i, self.servoPositionSliders[i].value())
+
+        self.ui.keyAllButton.clicked.connect(keyAll)
+
+
     def playPause(self):
         if self.playing:
             self.timer.stop()
