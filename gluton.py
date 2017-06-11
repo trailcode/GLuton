@@ -450,6 +450,19 @@ class GLuton(QMainWindow):
 
         self.ui.keyAllButton.clicked.connect(keyAll)
 
+        def moveKeys(delta):
+            t = self.timeSlider.value()
+            for curve in self.curves:
+                xValues = curve[0]
+                yValues = curve[1]
+                for i in range(len(xValues) - 1):
+                    if xValues[i] < t: continue
+                    xValues[i] += delta
+            self.updateServoSliders()
+            self.canvas.glDraw()
+
+        self.ui.moveLeftButton.clicked.connect(lambda : moveKeys(-1))
+        self.ui.moveRightButton.clicked.connect(lambda : moveKeys(1))
 
     def playPause(self):
         if self.playing:
