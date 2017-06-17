@@ -36,6 +36,9 @@ uint8_t servonum = 0;
 
 void setup() {
   Serial.begin(115200);
+
+  delay(100);
+  
   Serial.println("16 channel Servo test!");
 
   pwm.begin();
@@ -49,9 +52,9 @@ void setup() {
   // out for this!
 //#ifdef TWBR    
   // save I2C bitrate
-  uint8_t twbrbackup = TWBR;
+  //uint8_t twbrbackup = TWBR;
   // must be changed after calling Wire.begin() (inside pwm.begin())
-  TWBR = 12; // upgrade to 400KHz!
+  //TWBR = 12; // upgrade to 400KHz!
 //#endif
 
   yield();
@@ -72,16 +75,19 @@ void loop() {
     pwm.setPWM(servonum, 0, pulselen);
   }
   */
-
+  //Serial.println("fsfdf");
   // send data only when you receive data:
         if (Serial.available() > 0) {
                 // read the incoming byte:
                 int command = Serial.parseInt();
+                Serial.println(command);
                 if(command == 1)
                 {
                   int servo = Serial.parseInt();
                   int value = Serial.parseInt();
                   pwm.setPin(servo, value);
+                  delay(1);
+                  
                 }
                 else if(command == 2)
                 {

@@ -18,11 +18,13 @@ import serial
 #"""
 s = None
 #try: s = serial.Serial(port='/dev/cu.wchusbserial1420', baudrate=115200)
-try: s = serial.Serial(port='/dev/cu.usbmodem1411', baudrate=115200)
+#try: s = serial.Serial(port='/dev/cu.usbmodem1411', baudrate=115200)
+#try: s = serial.Serial(port='/dev/cu.usbserial-A700JNGX', baudrate=115200)
+try: s = serial.Serial(port='/dev/cu.usbserial-AI041TLS', baudrate=115200)
 except: pass
 #"""
 
-def _str(s): return str.encode(str(s));
+def _str(s): return str.encode(str(s))
 
 gui = None
 
@@ -163,6 +165,64 @@ class GLuton(QMainWindow):
         self.curves = [[[0, 6, 15, 35, 39, 256], [155, 186, 186, 135, 186, 132]], [[0, 35, 256], [209, 204, 206]], [[0, 26, 35, 256], [130, 129, 119, 129]], [[0, 256], [205, 201]], [[0, 256], [73, 71]], [[0, 256], [193, 190]],
                        [[0, 6, 10, 15, 35, 256], [180, 98, 165, 165, 217, 188]], [[0, 26, 35, 256], [195, 232, 246, 193]], [[0, 26, 256], [126, 89, 125]], [[0, 256], [41, 48]], [[0, 256], [177, 180]], [[0, 256], [192, 190]]]
 
+        self.curves = [[[0, 6, 15, 35, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [155, 186, 186, 127, 127, 122, 168, 182, 182, 180, 178, 141, 105, 125, 125, 151, 132]],
+                       [[0, 35, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [209, 204, 204, 174, 174, 175, 175, 209, 208, 207, 206, 206, 206, 206, 206]],
+                       [[0, 26, 35, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [130, 129, 119, 119, 158, 157, 156, 155, 132, 132, 131, 130, 129, 127, 132, 129]],
+                       [[0, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [205, 204, 203, 202, 201, 201, 201, 201, 201, 201, 201, 201, 201, 201]],
+                       [[0, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [73, 72, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71]],
+                       [[0, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [193, 192, 191, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190]],
+                       [[0, 6, 10, 15, 35, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [180, 98, 165, 165, 217, 216, 214, 175, 143, 168, 168, 168, 195, 209, 211, 210, 186, 188]],
+                       [[0, 26, 35, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [195, 232, 217, 198, 197, 196, 195, 194, 193, 223, 221, 219, 218, 196, 195, 193]],
+                       [[0, 26, 35, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [126, 89, 102, 128, 127, 126, 125, 125, 125, 97, 97, 98, 98, 128, 127, 125]],
+                       [[0, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [41, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 48]],
+                       [[0, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 180]],
+                       [[0, 42, 51, 57, 64, 70, 75, 80, 86, 93, 99, 105, 112, 256], [192, 191, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190]]]
+
+        self.curves = [[[0, 14, 31, 63, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [155, 186, 186, 127, 127, 122, 168, 182, 182, 180, 178, 141, 105, 125, 125, 151, 132]],
+                       [[0, 63, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [209, 204, 204, 174, 174, 175, 175, 209, 208, 207, 206, 206, 206, 206, 206]],
+                       [[0, 50, 63, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [130, 129, 119, 119, 158, 157, 156, 155, 132, 132, 131, 130, 129, 127, 132, 129]],
+                       [[0, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [205, 204, 203, 202, 201, 201, 201, 201, 201, 201, 201, 201, 201, 201]],
+                       [[0, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [73, 72, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71]],
+                       [[0, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [193, 192, 191, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190]],
+                       [[0, 14, 22, 31, 63, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [180, 98, 165, 165, 217, 216, 214, 175, 143, 168, 168, 168, 195, 209, 211, 210, 186, 188]],
+                       [[0, 50, 63, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [195, 232, 217, 198, 197, 196, 195, 194, 193, 223, 221, 219, 218, 196, 195, 193]],
+                       [[0, 50, 63, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [126, 89, 102, 128, 127, 126, 125, 125, 125, 97, 97, 98, 98, 128, 127, 125]],
+                       [[0, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [41, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 48]],
+                       [[0, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 180]],
+                       [[0, 74, 87, 101, 116, 126, 135, 144, 158, 173, 183, 193, 208, 256], [192, 191, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190]]]
+
+        # THis one works!
+        self.curves = [[[0, 16, 37, 73, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [155, 186, 186, 127, 127, 122, 168, 182, 182, 180, 178, 141, 105, 125, 125, 153]],
+                       [[0, 73, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [209, 204, 204, 174, 174, 175, 175, 209, 208, 207, 206, 206, 206, 206]],
+                       [[0, 58, 73, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [130, 129, 119, 119, 158, 157, 156, 155, 132, 132, 131, 130, 129, 127, 129]],
+                       [[0, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [205, 204, 203, 202, 201, 201, 201, 201, 201, 201, 201, 201, 201]],
+                       [[0, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [73, 72, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71, 71]],
+                       [[0, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [193, 192, 191, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190]],
+                       [[0, 16, 26, 37, 73, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [180, 98, 165, 165, 217, 216, 214, 175, 143, 168, 168, 168, 195, 209, 211, 210, 188]],
+                       [[0, 58, 73, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [195, 232, 217, 198, 197, 196, 195, 194, 193, 223, 221, 219, 218, 196, 193]],
+                       [[0, 58, 73, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [126, 89, 102, 128, 127, 126, 125, 125, 125, 97, 97, 98, 98, 128, 125]],
+                       [[0, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [41, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 48]],
+                       [[0, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177, 177]],
+                       [[0, 86, 101, 117, 136, 152, 165, 176, 192, 209, 223, 237, 256], [192, 191, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190, 190]]]
+
+        self.curves = [[[0, 256], [137, 134]], [[0, 45, 256], [209, 180, 206]], [[0, 45, 256], [130, 149, 129]], [[0, 256], [205, 201]], [[0, 256], [73, 71]], [[0, 256], [193, 190]], [[0, 256], [205, 205]], [[0, 45, 256], [195, 175, 193]],
+                       [[0, 45, 256], [126, 159, 125]], [[0, 256], [41, 48]], [[0, 256], [177, 180]], [[0, 256], [192, 190]]]
+
+        # Walks, a little wobbeling
+        self.curves = [[[0, 89, 124, 139, 161, 183, 203, 216, 226, 256], [132, 143, 181, 182, 182, 190, 147, 131, 130, 134]], [[0, 45, 89, 139, 161, 183, 203, 216, 256], [209, 180, 177, 183, 212, 227, 227, 227, 206]],
+                       [[0, 45, 89, 139, 161, 183, 203, 216, 256], [123, 149, 150, 145, 122, 97, 115, 117, 123]], [[0, 89, 139, 161, 183, 203, 216, 256], [205, 204, 203, 203, 203, 203, 203, 201]],
+                       [[0, 89, 139, 161, 183, 203, 216, 256], [73, 72, 71, 71, 71, 71, 71, 71]], [[0, 89, 139, 161, 183, 203, 216, 256], [193, 192, 191, 191, 191, 191, 191, 190]],
+                       [[0, 89, 124, 139, 161, 183, 203, 216, 256], [211, 192, 123, 169, 169, 169, 190, 209, 211]], [[0, 45, 89, 139, 161, 183, 203, 216, 256], [195, 175, 163, 169, 198, 233, 221, 233, 201]],
+                       [[0, 45, 89, 124, 139, 161, 183, 203, 216, 256], [135, 167, 167, 167, 167, 137, 116, 104, 96, 135]], [[0, 89, 139, 161, 183, 203, 216, 256], [41, 42, 43, 43, 43, 43, 43, 48]],
+                       [[0, 89, 139, 161, 183, 203, 216, 256], [177, 177, 177, 177, 177, 177, 177, 180]], [[0, 89, 139, 161, 183, 203, 216, 256], [192, 191, 190, 190, 190, 190, 190, 190]]]
+
+        self.curves = [[[0, 89, 124, 139, 161, 183, 203, 216, 226, 256], [132, 143, 181, 182, 182, 190, 147, 131, 130, 134]], [[0, 45, 89, 139, 161, 183, 203, 216, 256], [209, 180, 177, 183, 212, 227, 227, 227, 206]],
+                       [[0, 45, 89, 139, 161, 183, 203, 216, 256], [123, 149, 150, 145, 122, 97, 115, 117, 123]], [[0, 45, 89, 139, 161, 183, 203, 216, 256], [205, 175, 163, 203, 203, 203, 203, 203, 201]],
+                       [[0, 45, 89, 139, 161, 183, 203, 216, 256], [73, 59, 72, 71, 71, 71, 71, 71, 71]], [[0, 89, 139, 161, 183, 203, 216, 256], [193, 192, 191, 191, 191, 191, 191, 190]],
+                       [[0, 89, 124, 139, 161, 183, 203, 216, 256], [211, 192, 123, 169, 169, 169, 190, 209, 211]], [[0, 45, 89, 139, 161, 183, 203, 216, 256], [195, 175, 163, 169, 198, 233, 221, 233, 201]],
+                       [[0, 45, 89, 124, 139, 161, 183, 203, 216, 256], [135, 167, 167, 167, 167, 137, 116, 104, 96, 135]], [[0, 45, 89, 139, 161, 183, 203, 216, 256], [41, 3, 16, 43, 43, 43, 43, 43, 48]],
+                       [[0, 45, 89, 139, 161, 183, 203, 216, 256], [177, 149, 157, 177, 177, 177, 177, 177, 180]], [[0, 89, 139, 161, 183, 203, 216, 256], [192, 191, 190, 190, 190, 190, 190, 190]]]
+
         self.setupMenuBarEvents()
 
         self.setupServos()
@@ -250,9 +310,7 @@ class GLuton(QMainWindow):
 
     def setupServos(self):
         """Create the sliders for the servos and time slider, labels and spin boxes. Connect events to glue logic"""
-        for sliderName in self.servoNames:
-            self.servoPosGraphShowServo += [True]
-            self.servoEnabledState      += [False]
+        for sliderName in self.servoNames: self.servoPosGraphShowServo += [True]
 
         # Loop over all the servos and add the key value slides, labels, spin boxes, and key value graph pos enabled checkboxes
         for sliderName, index in zip(self.servoNames, range(0, len(self.servoNames))):
@@ -304,14 +362,10 @@ class GLuton(QMainWindow):
             box = QHBoxLayout()
 
             if sliderName != 'time':
-                def enabledStateChanged(sliderIndex, state):
-                    self.servoEnabledState[sliderIndex] = state != 0
-                    self.canvas.glDraw()
-
                 servoEnabled = QCheckBox()
                 servoEnabled.setChecked(False)
-                servoEnabled.stateChanged.connect(lambda state, sliderName=sliderName: enabledStateChanged(self.servoNames.index(sliderName), state))
                 box.addWidget(servoEnabled)
+                self.servoEnabledState += [servoEnabled]
 
             label = QLabel()
             label.setText(sliderName + ':')
@@ -407,9 +461,11 @@ class GLuton(QMainWindow):
             """Copies key previous to the current time and inserts it at the current time."""
             pair = self.getCurrKeyPair()
             if pair is None: return
-
+            print(pair)
             values = self.getServoValues(pair[0])
-            for i in range(len(self.curves)): self.servoPositionSliders[i].setValue(values[i])
+            for i in range(len(self.curves)):
+                self.servoPositionSliders[i].setValue(values[i])
+                self.servoSliderChanged(i, values[i])
 
         self.ui.copyPrevKeyButton.clicked.connect(copyPrevKey)
 
@@ -446,7 +502,13 @@ class GLuton(QMainWindow):
             self.timeSlider.setValue(key)
 
         self.ui.pushButtonPrevKey.clicked.connect(lambda: jumpToKey(self.getCurrKeyPair()[0]))
-        self.ui.pushButtonNextKey.clicked.connect(lambda: jumpToKey(self.getCurrKeyPair(cmp='>')[1]))
+
+        def next():
+            pair = self.getCurrKeyPair(cmp='>')
+            if pair is None:    jumpToKey(0)
+            else:               jumpToKey(pair[1])
+
+        self.ui.pushButtonNextKey.clicked.connect(next)
 
         def copy():
             self.copyBuffer = []
@@ -476,8 +538,8 @@ class GLuton(QMainWindow):
             self.updateServoSliders()
             self.canvas.glDraw()
 
-        self.ui.moveLeftButton.clicked.connect(lambda : moveKeys(-1))
-        self.ui.moveRightButton.clicked.connect(lambda : moveKeys(1))
+        self.ui.moveLeftButton.clicked.connect(lambda : moveKeys(-2))
+        self.ui.moveRightButton.clicked.connect(lambda : moveKeys(2))
 
     def playPause(self):
         if self.playing:
@@ -504,6 +566,11 @@ class GLuton(QMainWindow):
         self.ui.playButton.clicked.connect(self.playPause)
 
         self.ui.intervalSpinBox.valueChanged.connect(lambda value: self.timer.setInterval(value))
+
+        def servosEnabled(state):
+            for i in self.servoEnabledState: i.setCheckState(state)
+
+        self.ui.servosEnabledCheckBox.stateChanged.connect(servosEnabled)
 
     def setupInterpolationEvents(self):
 
@@ -631,7 +698,7 @@ class GLuton(QMainWindow):
 
         self.inTime = False
 
-    def servoSliderChanged(self, index: int, value: int):
+    def servoSliderChanged(self, index: int, value: int, t = None):
 
         self.inServoOrTimeSliderChange = True
 
@@ -671,7 +738,7 @@ class GLuton(QMainWindow):
                     pass
                 #self.setServo(index, (value / 255.0) - 0.5)
 
-                if self.servoEnabledState[index]: self.setServo(index, (value / 255.0) - 0.5)
+                if self.servoEnabledState[index].isChecked(): self.setServo(index, (value / 255.0) - 0.5)
 
                 #self.glutonCanvas.servos[self.names[index]].setAngle(v)
                 self.glutonCanvas.servos[self.servoNames[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
@@ -684,7 +751,7 @@ class GLuton(QMainWindow):
                 self.inServoOrTimeSliderChange = False
                 return
 
-            t = self.timeSlider.value()
+            if t is None: t = self.timeSlider.value()
 
             curve = self.curves[index]
 
@@ -706,13 +773,7 @@ class GLuton(QMainWindow):
                     yValues.insert(i, self.servoPositionSliders[index].value())
                     break
 
-            self.animation[t] = []
-
-            values = []
-
-            for i in self.servoPositionSliders: values += [i.value()]
-
-            self.animation[t] = values
+            if t == 0: self.servoSliderChanged(index, value, 256)
 
         self.inServoOrTimeSliderChange = False
 
@@ -735,7 +796,8 @@ class GLuton(QMainWindow):
 
 
 
-        c = "1 " + str(int(i)) + " " + str(int(v)) + "\r\n"
+        #c = "1 " + str(int(i)) + " " + str(int(v)) + "\r\n"
+        c = "1 " + str(int(i)) + " " + str(int(v)) + "\n"
         #print(c)
 
         #"""
@@ -745,8 +807,9 @@ class GLuton(QMainWindow):
 
             s.write(_str(c))
 
-            s.write(_str('2 1\r\n'))
-            r = str(s.readline()).strip()
+            #s.write(_str('2 1\r\n'))
+            #s.write(_str('2 1\n'))
+            #r = str(s.readline()).strip()
             #print('r', r)
 
         except: pass

@@ -814,6 +814,13 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
+        <widget class="QCheckBox" name="servosEnabledCheckBox">
+         <property name="text">
+          <string>Servos Enabled</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="playButton">
          <property name="maximumSize">
           <size>
@@ -860,7 +867,7 @@
           <number>500</number>
          </property>
          <property name="value">
-          <number>10</number>
+          <number>200</number>
          </property>
         </widget>
        </item>
