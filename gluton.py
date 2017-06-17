@@ -148,9 +148,9 @@ class GLuton(QMainWindow):
 
         self.ui.actionSave.triggered.connect(save)
 
-        ####################################################################################
-        #
-        ####################################################################################
+        #...................................................................................
+        # Connect showing or hiding the key value graph docking panel
+        #...................................................................................
         def showHideKeyValueGraph():
             if self.ui.actionKeyValueGraph.isChecked(): self.ui.keyValueGrapDockWidget.show()
             else:                                       self.ui.keyValueGrapDockWidget.hide()
@@ -159,9 +159,9 @@ class GLuton(QMainWindow):
 
         self.ui.keyValueGrapDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyValueGraph.setChecked(visiable))
 
-        ####################################################################################
-        #
-        ####################################################################################
+        #...................................................................................
+        # Connect showing or hiding the key frame editor docking panel
+        #...................................................................................
         def showHideKeyFrameEditor():
             if self.actionKeyFrameEditor.isChecked():   self.ui.keyFrameEditorDockWidget.show()
             else:                                       self.ui.keyFrameEditorDockWidget.hide()
@@ -170,9 +170,9 @@ class GLuton(QMainWindow):
 
         self.ui.keyFrameEditorDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyFrameEditor.setChecked(visiable))
 
-        ####################################################################################
-        #
-        ####################################################################################
+        #...................................................................................
+        # Connect showing or hiding the python console docking panel
+        #...................................................................................
         def showHideConsole():
             if self.actionConsole.isChecked():  self.ui.consoleDockWidget.show()
             else:                               self.ui.consoleDockWidget.hide()
@@ -181,9 +181,9 @@ class GLuton(QMainWindow):
 
         self.ui.consoleDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionConsole.setChecked(visiable))
 
-        ####################################################################################
-        #
-        ####################################################################################
+        #...................................................................................
+        # Connect showing or hiding the servo adjustment docking panel
+        #...................................................................................
         def showHideServoAdjustment():
             if self.actionServoAdjustment.isChecked():  self.ui.servoAdjustmentDockWidget.show()
             else:                                       self.ui.servoAdjustmentDockWidget.hide()
@@ -192,9 +192,9 @@ class GLuton(QMainWindow):
 
         self.ui.servoAdjustmentDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionServoAdjustment.setChecked(visiable))
 
-        ####################################################################################
-        #
-        ####################################################################################
+        #...................................................................................
+        # Connect showing or hiding the GLuton connection docking panel
+        #...................................................................................
         def showHideGLutonConnection():
             print('self.ui.actionGLutonConnection.isChecked()', self.ui.actionGLutonConnection.isChecked())
             if self.ui.actionGLutonConnection.isChecked():  self.ui.glutonConnectionDockWidget.show()
