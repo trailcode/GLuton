@@ -30,12 +30,9 @@ class ServosPosGraph(QGLWidget):
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
         self.sliders = gluton.sliders
-        self.gluton = gluton
-        self.colors = [(70,128,50),(255,255,255),(255,0,0),(0,255,0),(0,0,255),(255,255,0),(0,255,255),(255,0,255),
-                       (192,192,192),(128,128,128),(128,0,0),(128,128,0),(0,128,0),(128,0,128),(0,128,128),(0,0,128)] # Move to Gluton.py
+        self.gluton  = gluton # type: GLuton
 
-        #"""
-        self.colors = [
+        self.colors = [ # Move to Gluton.py
             (87, 87, 87), # Dk. Gray
             (173, 35, 35), # Red
             (42, 75, 215), # Blue
@@ -52,15 +49,15 @@ class ServosPosGraph(QGLWidget):
             (255, 205, 243), # Pink
             (255, 255, 255), # White
         ]
-        #"""
 
         self.setMouseTracking(True)
-        self.closestKey = 0
+
+        self.closestKey         = 0
         self.closestKeyValuePos = None
-        self.closestCurveIndex = None
-        self.mode = Mode.NORMAL
-        self.copyBuffer = None
-        self.lastClickPos = None # type: QVector2D
+        self.closestCurveIndex  = None
+        self.mode               = Mode.NORMAL
+        self.copyBuffer         = None
+        self.lastClickPos       = None # type: QVector2D
 
         def setMode(mode): self.mode = mode
 
@@ -191,10 +188,8 @@ class ServosPosGraph(QGLWidget):
     def setMouseTracking(self, flag: bool):
         def recursive_set(parent):
             for child in parent.findChildren(QObject):
-                try:
-                    child.setMouseTracking(flag)
-                except:
-                    pass
+                try:    child.setMouseTracking(flag)
+                except: pass
                 recursive_set(child)
 
         QWidget.setMouseTracking(self, flag)
@@ -228,7 +223,7 @@ class ServosPosGraph(QGLWidget):
             (i, j, k) = self.closestKeyValuePos
             del self.gluton.curves[i][0][j]
             del self.gluton.curves[i][1][j]
-            self.mouseMoveEvent(event)
+            self.closestKeyValuePos = None
             self.glDraw()
 
     def mouseMoveEvent(self, event: QMouseEvent):
