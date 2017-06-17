@@ -262,6 +262,19 @@ class GlutonView(QGLWidget):
             self.arcBall.click(mouse_pt)  # // Update Start Vector And Prepare For Dragging
 
 
+    def setRotation(self, rotation):
+
+        self.thisRot = np.array(rotation, dtype=np.float32)
+        self.lastRot = np.array(rotation, dtype=np.float32) # Needed?
+
+        # Set Our Final Transform's Rotation From This One
+        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform, self.thisRot)
+        self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
+
+        #print(self.transform)
+
+        self.glDraw()
+
     def wheelEvent(self, event : QWheelEvent):
         """
         Called by the Qt libraries whenever the window receives a mouse wheel change.
@@ -281,19 +294,6 @@ class GlutonView(QGLWidget):
         else:
             self.distance += delta * 0.05
             if self.distance > -2: self.distance = -2
-
-        self.glDraw()
-
-    def setRotation(self, rotation):
-
-        self.thisRot = np.array(rotation, dtype=np.float32)
-        self.lastRot = np.array(rotation, dtype=np.float32) # Needed?
-
-        # Set Our Final Transform's Rotation From This One
-        self.transform = Matrix4fSetRotationFromMatrix3f(self.transform, self.thisRot)
-        self.transform[3][3] = 1.0  # Prevent objects getting smaller and drifting apart over time
-
-        #print(self.transform)
 
         self.glDraw()
 

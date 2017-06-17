@@ -97,15 +97,9 @@ class ServosPosGraph(QGLWidget):
         glVertex3f(t, 256, 0)
         glEnd()
 
-        ani = self.gluton.animation
-
         self.closestKey = self.gluton.getClosestKey()
 
-        keys, values = self.gluton.getOrderedKeysValues()
-
         curves = self.gluton.curves
-
-        #print('self.closestCurveIndex', self.closestCurveIndex, 'self.closestKeyValuePos', self.closestKeyValuePos)
 
         def setColorAndLineWidth(index):
 
@@ -292,6 +286,16 @@ class ServosPosGraph(QGLWidget):
             self.glutonView.glDraw()
 
         self.glDraw()
+
+    def wheelEvent(self, event: QWheelEvent):
+        delta = event.delta() / 2
+        if delta == 0: return
+        t = self.gluton.timeSlider.value()
+        maxDelta = 3
+        t += min(maxDelta, max(-maxDelta, delta))
+        if t > self.gluton.timeSlider.maximum(): t = 0
+        elif t < 0: t = self.gluton.timeSlider.maximum()
+        self.gluton.timeSlider.setValue(t)
 
     def leaveEvent(self, event):
         self.closestKeyValuePos = None

@@ -16,11 +16,11 @@ sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
 
 #"""
-s = None
+servoOut = None
 #try: s = serial.Serial(port='/dev/cu.wchusbserial1420', baudrate=115200)
 #try: s = serial.Serial(port='/dev/cu.usbmodem1411', baudrate=115200)
 #try: s = serial.Serial(port='/dev/cu.usbserial-A700JNGX', baudrate=115200)
-try: s = serial.Serial(port='/dev/cu.usbserial-AI041TLS', baudrate=115200)
+try: servoOut = serial.Serial(port='/dev/cu.usbserial-AI041TLS', baudrate=115200)
 except: pass
 #"""
 
@@ -65,6 +65,8 @@ class GLuton(QMainWindow):
         self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
                            'time']
+
+        self.maxTime = 128
 
         self.poses = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -583,20 +585,11 @@ class GLuton(QMainWindow):
 
             try:
                 v= self.getServoValue(index, value / 255.0) / 700.0 * 360.0
-                """
-                self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
-                           'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
-                           'time']
-                """
-                if (self.servoNames[index] == 'Left Hip') or (self.servoNames[index] == 'Right Hip'):
-                    #self.setServo(index, (value / 255.0) - 0.5)
-                    pass
-                #self.setServo(index, (value / 255.0) - 0.5)
 
                 if self.servoEnabledState[index].isChecked(): self.setServo(index, (value / 255.0) - 0.5)
 
-                #self.glutonCanvas.servos[self.names[index]].setAngle(v)
                 self.glutonCanvas.servos[self.servoNames[index]].setAngle(((value / 255.0) - 0.5) * 180.0)
+
                 if self.allowGlutonCanvasRedraw: self.glutonCanvas.glDraw()
 
             except:
@@ -658,9 +651,9 @@ class GLuton(QMainWindow):
         #"""
 
         try:
-            if s is None: return
+            if servoOut is None: return
 
-            s.write(_str(c))
+            servoOut.write(_str(c))
 
             #s.write(_str('2 1\r\n'))
             #s.write(_str('2 1\n'))
