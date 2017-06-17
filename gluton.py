@@ -14,6 +14,7 @@ import numpy as np
 import sys
 sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
+import telnetlib
 
 #"""
 servoOut = None
@@ -65,6 +66,8 @@ class GLuton(QMainWindow):
         self.servoNames = ['Left Ankle', 'Left Knee', 'Left Hip', 'Left Shoulder', 'Left Elbow', 'Left Wrist',
                            'Right Ankle', 'Right Knee', 'Right Hip', 'Right Shoulder', 'Right Elbow', 'Right Wrist',
                            'time']
+
+        self.telnetConnection = None
 
         self.maxTime = 128
 
@@ -651,6 +654,11 @@ class GLuton(QMainWindow):
         #"""
 
         try:
+            if not self.telnetConnection:
+                self.telnetConnection = telnetlib.Telnet('192.168.0.10')
+
+            self.telnetConnection.write(c.encode('ascii'))
+
             if servoOut is None: return
 
             servoOut.write(_str(c))

@@ -18,6 +18,15 @@
 
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <ESP8266WiFi.h>
+
+//how many clients should be able to telnet to this ESP8266
+#define MAX_SRV_CLIENTS 1
+const char* ssid = "myqwest0123";
+const char* password = "five123412";
+
+WiFiServer server(23);
+WiFiClient serverClients[MAX_SRV_CLIENTS];
 
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
@@ -38,9 +47,24 @@ void setup() {
   Serial.begin(115200);
 
   delay(100);
-  
-  Serial.println("16 channel Servo test!");
 
+  WiFi.begin(ssid, password);
+  Serial.print("\nConnecting to "); Serial.println(ssid);
+  uint8_t i = 0;
+   while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.print("Ready! Use 'telnet ");
+  Serial.print(WiFi.localIP());
+  Serial.println(" 23' to connect");
+  
+  //start UART and the server
+  //Serial.begin(115200);
+  server.begin();
+  server.setNoDelay(true);
+  
   pwm.begin();
   
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
@@ -62,75 +86,55 @@ void setup() {
 
 #define uint uint16_t
 
-void loop() {
-  // Drive each servo one at a time
-  /*
-  Serial.println(servonum);
-  for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
-    pwm.setPWM(servonum, 0, pulselen);
+void loop()
+{
+  int i;
+  //check if there are any new clients
+  if (server.hasClient()){
+    for(i = 0; i < MAX_SRV_CLIENTS; i++){
+      //find free/disconnected spot
+      if (!serverClients[i] || !serverClients[i].connected()){
+        if(serverClients[i]) serverClients[i].stop();
+        serverClients[i] = server.available();
+        Serial1.print("New client: "); Serial1.print(i);
+        continue;
+      }
+    }
+    //no free/disconnected spot so reject
+    WiFiClient serverClient = server.available();
+    serverClient.stop();
   }
-
-  delay(500);
-  for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
-    pwm.setPWM(servonum, 0, pulselen);
-  }
-  */
-  //Serial.println("fsfdf");
-  // send data only when you receive data:
-        if (Serial.available() > 0) {
-                // read the incoming byte:
-                int command = Serial.parseInt();
-                Serial.println(command);
-                if(command == 1)
-                {
-                  int servo = Serial.parseInt();
-                  int value = Serial.parseInt();
-                  pwm.setPin(servo, value);
-                  delay(1);
-                  
-                }
-                else if(command == 2)
-                {
-                  delay(Serial.parseInt());
-                  Serial.println("=");
-                }
-                else if(command == 3)
-                {
-                  int pin = Serial.parseInt();
-
-                  Serial.println(analogRead(pin));
-                  //Serial.println(128);
-                  
-                }
-                //int incomingByte1 = Serial.read();
-
-                
-
-                // say what you got:
-                /*
-                Serial.print("servo: ");
-                Serial.print(servo);
-                Serial.print(" value: ");
-                Serial.println(value);
-                
-                yield();
-                //*/
-                //Serial.print(" ");
-                //Serial.println(incomingByte1);
-        }
-
-  /*
-  for(uint i = 0; i < 13; ++i)
+  
+  //if (Serial.available() > 0)
+  if(serverClients[0].available())
   {
-    setServo(i, sin(f));
-    //setServo(i, 0);
+    // read the incoming byte:
+    //int command = Serial.parseInt();
+    int command = serverClients[0].parseInt();
+    Serial.println(command);
+    if(command == 1)
+    {
+      /*
+      int servo = Serial.parseInt();
+      int value = Serial.parseInt();
+      */
+      int servo = serverClients[0].parseInt();
+      int value = serverClients[0].parseInt();
+      pwm.setPin(servo, value);
+      delay(1);
+    }
+    else if(command == 2)
+    {
+      //delay(Serial.parseInt());
+      delay(serverClients[0].parseInt());
+      Serial.println("=");
+    }
+    else if(command == 3)
+    {
+      //int pin = Serial.parseInt();
+      int pin = serverClients[0].parseInt();
+      
+      Serial.println(analogRead(pin));
+    }
   }
-
-  f += 0.1;
-
-  delay(50);
-
-  servonum ++;
-  if (servonum > 0) servonum = 0;
-  */
 }
