@@ -148,6 +148,9 @@ class GLuton(QMainWindow):
 
         self.ui.actionSave.triggered.connect(save)
 
+        ####################################################################################
+        #
+        ####################################################################################
         def showHideKeyValueGraph():
             if self.ui.actionKeyValueGraph.isChecked(): self.ui.keyValueGrapDockWidget.show()
             else:                                       self.ui.keyValueGrapDockWidget.hide()
@@ -156,6 +159,9 @@ class GLuton(QMainWindow):
 
         self.ui.keyValueGrapDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyValueGraph.setChecked(visiable))
 
+        ####################################################################################
+        #
+        ####################################################################################
         def showHideKeyFrameEditor():
             if self.actionKeyFrameEditor.isChecked():   self.ui.keyFrameEditorDockWidget.show()
             else:                                       self.ui.keyFrameEditorDockWidget.hide()
@@ -164,6 +170,9 @@ class GLuton(QMainWindow):
 
         self.ui.keyFrameEditorDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyFrameEditor.setChecked(visiable))
 
+        ####################################################################################
+        #
+        ####################################################################################
         def showHideConsole():
             if self.actionConsole.isChecked():  self.ui.consoleDockWidget.show()
             else:                               self.ui.consoleDockWidget.hide()
@@ -172,13 +181,29 @@ class GLuton(QMainWindow):
 
         self.ui.consoleDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionConsole.setChecked(visiable))
 
+        ####################################################################################
+        #
+        ####################################################################################
         def showHideServoAdjustment():
-            if self.actionConsole.isChecked():  self.ui.servoAdjustmentDockWidget.show()
-            else:                               self.ui.servoAdjustmentDockWidget.hide()
+            if self.actionServoAdjustment.isChecked():  self.ui.servoAdjustmentDockWidget.show()
+            else:                                       self.ui.servoAdjustmentDockWidget.hide()
 
         self.ui.actionServoAdjustment.triggered.connect(showHideServoAdjustment)
 
         self.ui.servoAdjustmentDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionServoAdjustment.setChecked(visiable))
+
+        ####################################################################################
+        #
+        ####################################################################################
+        def showHideGLutonConnection():
+            print('self.ui.actionGLutonConnection.isChecked()', self.ui.actionGLutonConnection.isChecked())
+            if self.ui.actionGLutonConnection.isChecked():  self.ui.glutonConnectionDockWidget.show()
+            else:                                           self.ui.glutonConnectionDockWidget.hide()
+
+        self.ui.actionGLutonConnection.triggered.connect(showHideGLutonConnection)
+
+        self.ui.glutonConnectionDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionGLutonConnection.setChecked(visiable))
+
 
     def setupServos(self):
         """Create the sliders for the servos and time slider, labels and spin boxes. Connect events to glue logic"""

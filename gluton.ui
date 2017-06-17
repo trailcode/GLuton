@@ -153,6 +153,7 @@
     <addaction name="actionKeyFrameEditor"/>
     <addaction name="actionConsole"/>
     <addaction name="actionServoAdjustment"/>
+    <addaction name="actionGLutonConnection"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -955,6 +956,15 @@
     <zorder>verticalSpacer</zorder>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="glutonConnectionDockWidget">
+   <property name="windowTitle">
+    <string>GLuton Connection</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2"/>
+  </widget>
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
@@ -975,6 +985,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Key Frame Editor</string>
    </property>
@@ -983,13 +996,33 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Console</string>
    </property>
   </action>
   <action name="actionServoAdjustment">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Servo Adjustment</string>
+   </property>
+  </action>
+  <action name="actionGLutonConnection">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>GLuton Connection</string>
    </property>
   </action>
  </widget>
