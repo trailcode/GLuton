@@ -29,27 +29,6 @@ class ServosPosGraph(QGLWidget):
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHeightForWidth(True)
         self.setSizePolicy(sizePolicy)
-        self.sliders = gluton.sliders
-        self.gluton  = gluton # type: GLuton
-
-        self.colors = [ # Move to Gluton.py
-            (87, 87, 87), # Dk. Gray
-            (173, 35, 35), # Red
-            (42, 75, 215), # Blue
-            (29, 105, 20), # Green
-            (129, 74, 25), # Brown
-            (129, 38, 192), # Purple
-            (160, 160, 160), # Lt. Gray
-            (129, 197, 122), # Lt. Green
-            (157, 175, 255), # Lt. Blue
-            (41, 208, 208), # Cyan
-            (255, 146, 51), # Orange
-            (255, 238, 51), # Yellow
-            (233, 222, 187), # Tan
-            (255, 205, 243), # Pink
-            (255, 255, 255), # White
-        ]
-
         self.setMouseTracking(True)
 
         self.closestKey         = 0
@@ -58,8 +37,34 @@ class ServosPosGraph(QGLWidget):
         self.mode               = Mode.NORMAL
         self.copyBuffer         = None
         self.lastClickPos       = None # type: QVector2D
+        self.interpolatedCurves = []
+        self.gluton             = gluton  # type: GLuton
+        self.glutonView         = self.gluton.glutonCanvas  # type: GlutonView
+        self.sliders            = gluton.sliders
+        self.colors             = [  # Move to Gluton.py
+                                    (87, 87, 87),  # Dk. Gray
+                                    (173, 35, 35),  # Red
+                                    (42, 75, 215),  # Blue
+                                    (29, 105, 20),  # Green
+                                    (129, 74, 25),  # Brown
+                                    (129, 38, 192),  # Purple
+                                    (160, 160, 160),  # Lt. Gray
+                                    (129, 197, 122),  # Lt. Green
+                                    (157, 175, 255),  # Lt. Blue
+                                    (41, 208, 208),  # Cyan
+                                    (255, 146, 51),  # Orange
+                                    (255, 238, 51),  # Yellow
+                                    (233, 222, 187),  # Tan
+                                    (255, 205, 243),  # Pink
+                                    (255, 255, 255),  # White
+                                ]
 
-        def setMode(mode): self.mode = mode
+        #....................................................................................
+        # Connect the mode buttons at the top of the panel so when they are pressed the
+        # current mode is changed.
+        def setMode(mode):
+            self.mode = mode
+            self.glDraw()
 
         self.gluton.ui.delButton            .clicked.connect(lambda: setMode(Mode.DELETE))
         self.gluton.ui.addButton            .clicked.connect(lambda: setMode(Mode.ADD))
@@ -68,10 +73,7 @@ class ServosPosGraph(QGLWidget):
         self.gluton.ui.selectButton         .clicked.connect(lambda: setMode(Mode.SELECT))
         self.gluton.ui.copyKeyValuesButton  .clicked.connect(lambda: setMode(Mode.COPY))
         self.gluton.ui.pasteKeyValuesButton .clicked.connect(lambda: setMode(Mode.PASTE))
-
-        self.interpolatedCurves = []
-
-        self.glutonView = self.gluton.glutonCanvas # type: GlutonView
+        # ....................................................................................
 
     def paintGL(self):
         self.makeCurrent()
@@ -93,8 +95,6 @@ class ServosPosGraph(QGLWidget):
         glVertex3f(t, 0, 0)
         glVertex3f(t, 256, 0)
         glEnd()
-
-        self.closestKey = self.gluton.getClosestKey()
 
         curves = self.gluton.curves
 
@@ -123,6 +123,8 @@ class ServosPosGraph(QGLWidget):
 
         self.interpolatedCurves = []
 
+        closestKey = self.gluton.getClosestKey()
+
         for curveIndex in range(len(curves)):
             points = []
 
@@ -133,7 +135,7 @@ class ServosPosGraph(QGLWidget):
             yValues = curve[1]
 
             try:
-                dasdd
+                #dasdd
                 s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
                            np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
                 x = np.linspace(0, 256, 256)
@@ -154,7 +156,7 @@ class ServosPosGraph(QGLWidget):
 
             glColor3f(1,1,1)
             for i in range(len(xValues)):
-                if xValues[i] == self.closestKey:
+                if xValues[i] == closestKey and self.mode != Mode.DELETE and self.mode != Mode.MOVE:
                     glPointSize(10)
                     glBegin(GL_POINTS)
                     glVertex2f(xValues[i], yValues[i])
