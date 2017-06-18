@@ -12,7 +12,7 @@ from GlutonView import GlutonView
 from spyderlib.widgets import internalshell
 import numpy as np
 import sys
-sys.path.append('/anaconda/lib/python3.5/site-packages')
+#sys.path.append('/anaconda/lib/python3.5/site-packages')
 import serial
 import telnetlib
 
