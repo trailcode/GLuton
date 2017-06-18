@@ -9,7 +9,7 @@ If the link does not work search for "13 DOF Robot Set (With Servo, Arduino cont
 ### Hardware
 
 * ADAFRUIT 16-CHANNEL 12-BIT PWM/SERVO DRIVER - I2C INTERFACE
-  ![alt text](https://cdn-shop.adafruit.com/970x728/815-06.jpg)
+  ![alt text](https://cdn-shop.adafruit.com/970x728/815-06.jpg =350x)
   https://www.adafruit.com/product/815
 
 * SparkFun ESP8266 Thing - Dev Board
