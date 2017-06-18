@@ -114,8 +114,7 @@ class ServosPosGraph(QGLWidget):
 
             glColor3f(self.colors[index][0] / 255.0, self.colors[index][1] / 255.0, self.colors[index][2] / 255.0)
 
-            if self.gluton.servoPosGraphShowServo[index]:
-                glDisable(GL_LINE_STIPPLE)
+            if self.gluton.servoPosGraphShowServo[index]: glDisable(GL_LINE_STIPPLE)
 
             else:
                 glLineStipple(3, 0xAAAA)

@@ -55,8 +55,7 @@ class GLuton(QMainWindow):
         self.copyBuffer = None # type: list
         self.playing = False
         self.interpolationMode = 0
-        self.currBeingEdited = 0
-        """The index of the slider currently being edited or having the mouse over the key value slider"""
+        self.currBeingEdited = 0 # The index of the slider currently being edited or having the mouse over the key value slider
         self.servoPositionSliders = []
         self.timeSlider = None  # type: QSlider
         self.timeLabel = None   # type: QSlider
@@ -150,7 +149,7 @@ class GLuton(QMainWindow):
 
         #...................................................................................
         # Connect showing or hiding the key value graph docking panel
-        #...................................................................................
+        #
         def showHideKeyValueGraph():
             if self.ui.actionKeyValueGraph.isChecked(): self.ui.keyValueGrapDockWidget.show()
             else:                                       self.ui.keyValueGrapDockWidget.hide()
@@ -158,10 +157,11 @@ class GLuton(QMainWindow):
         self.ui.actionKeyValueGraph.triggered.connect(showHideKeyValueGraph)
 
         self.ui.keyValueGrapDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyValueGraph.setChecked(visiable))
+        #...................................................................................
 
         #...................................................................................
         # Connect showing or hiding the key frame editor docking panel
-        #...................................................................................
+        #
         def showHideKeyFrameEditor():
             if self.actionKeyFrameEditor.isChecked():   self.ui.keyFrameEditorDockWidget.show()
             else:                                       self.ui.keyFrameEditorDockWidget.hide()
@@ -169,10 +169,11 @@ class GLuton(QMainWindow):
         self.ui.actionKeyFrameEditor.triggered.connect(showHideKeyFrameEditor)
 
         self.ui.keyFrameEditorDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionKeyFrameEditor.setChecked(visiable))
+        #...................................................................................
 
         #...................................................................................
         # Connect showing or hiding the python console docking panel
-        #...................................................................................
+        #
         def showHideConsole():
             if self.actionConsole.isChecked():  self.ui.consoleDockWidget.show()
             else:                               self.ui.consoleDockWidget.hide()
@@ -180,10 +181,11 @@ class GLuton(QMainWindow):
         self.ui.actionConsole.triggered.connect(showHideConsole)
 
         self.ui.consoleDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionConsole.setChecked(visiable))
+        #...................................................................................
 
         #...................................................................................
         # Connect showing or hiding the servo adjustment docking panel
-        #...................................................................................
+        #
         def showHideServoAdjustment():
             if self.actionServoAdjustment.isChecked():  self.ui.servoAdjustmentDockWidget.show()
             else:                                       self.ui.servoAdjustmentDockWidget.hide()
@@ -191,10 +193,11 @@ class GLuton(QMainWindow):
         self.ui.actionServoAdjustment.triggered.connect(showHideServoAdjustment)
 
         self.ui.servoAdjustmentDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionServoAdjustment.setChecked(visiable))
+        #...................................................................................
 
         #...................................................................................
         # Connect showing or hiding the GLuton connection docking panel
-        #...................................................................................
+        #
         def showHideGLutonConnection():
             print('self.ui.actionGLutonConnection.isChecked()', self.ui.actionGLutonConnection.isChecked())
             if self.ui.actionGLutonConnection.isChecked():  self.ui.glutonConnectionDockWidget.show()
@@ -203,6 +206,7 @@ class GLuton(QMainWindow):
         self.ui.actionGLutonConnection.triggered.connect(showHideGLutonConnection)
 
         self.ui.glutonConnectionDockWidget.visibilityChanged.connect(lambda visiable: self.ui.actionGLutonConnection.setChecked(visiable))
+        #...................................................................................
 
 
     def setupServos(self):
@@ -381,6 +385,7 @@ class GLuton(QMainWindow):
 
         def deleteCurrKey():
             closestKey = self.getClosestKey()
+            if closestKey == 0 or closestKey == 256: return # Cannot delete the first or last key
             for curve in self.curves:
                 xValues = curve[0]
                 yValues = curve[1]
