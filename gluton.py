@@ -550,25 +550,35 @@ class GLuton(QMainWindow):
         if value - pair[0] < pair[1] - value: return pair[0]
         return pair[1]
 
+    def getSplrepInterpolator(self, curveIndex):
+        curve   = self.curves[curveIndex]
+        xValues = curve[0]
+        yValues = curve[1]
+
+        try:
+            _xValues = [xValues[-2] - 256] + xValues + [256 + xValues[1]]
+            _yValues = [yValues[-2]] + yValues + [yValues[1]]
+
+            return splrep(  np.ndarray(shape=(len(_xValues),), buffer=np.array(_xValues), dtype=int),
+                            np.ndarray(shape=(len(_xValues),), buffer=np.array(_yValues), dtype=int))
+        except: return None
+
     def getServoValues(self, t):
         ret = []
         for i in range(len(self.curves)):
-            curve = self.curves[i]
-            xValues = curve[0]
-            yValues = curve[1]
-            try:
-                ddd
-                s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
-                           np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
+            interpol = self.getSplrepInterpolator(i)
 
-                ret += [splev(t, s)]
-
-            except:
+            if interpol is not None: ret += [splev(t, interpol)]
+            else:
+                curve = self.curves[i]
+                xValues = curve[0]
+                yValues = curve[1]
                 for j in range(len(xValues)):
                     if xValues[j] < t: continue
                     intp = interp1d((xValues[j - 1], xValues[j]), (yValues[j - 1], yValues[j]))
                     ret += [intp(t)]
                     break
+
         return ret
 
     def updateServoSliders(self):

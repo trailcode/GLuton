@@ -128,27 +128,27 @@ class ServosPosGraph(QGLWidget):
         for curveIndex in range(len(curves)):
             points = []
 
-            setColorAndLineWidth(curveIndex)
-            glBegin(GL_LINE_STRIP)
             curve = curves[curveIndex]
             xValues = curve[0]
             yValues = curve[1]
 
-            try:
-                #dasdd
-                s = splrep(np.ndarray(shape=(len(xValues),), buffer=np.array(xValues), dtype=int),
-                           np.ndarray(shape=(len(xValues),), buffer=np.array(yValues), dtype=int))
+            setColorAndLineWidth(curveIndex)
+            glBegin(GL_LINE_STRIP)
+
+            interpol = self.gluton.getSplrepInterpolator(curveIndex)
+
+            if interpol is not None:
                 x = np.linspace(0, 256, 256)
-                y = splev(x, s)
+                y = splev(x, interpol)
 
                 for i in range(len(y)):
                     glVertex2f(x[i], y[i])
                     points += [(x[i], y[i])]
-
-            except:
+            else:
                 for i in range(len(xValues)):
                     glVertex2d(xValues[i], yValues[i])
                     points += [(xValues[i], yValues[i])]
+
             glEnd()
 
             if self.gluton.servoPosGraphShowServo[curveIndex]:  self.interpolatedCurves += [LineString(points)]
