@@ -3,6 +3,8 @@
 This software is for controlling the robot kit: https://www.ebay.com/i/261847421942?chn=ps&dispItem=1
 If the link does not work search for "13 DOF Robot Set (With Servo, Arduino controllable,from USA)"
 
+**note** 13 DOF is not enough to have a good walking robot. At best the robot can wobble like a penguin.
+
 ![alt text](https://user-images.githubusercontent.com/4764954/27257571-e59618be-5398-11e7-8625-d539f0bd3ba2.png)
 ![alt text](https://user-images.githubusercontent.com/4764954/27257581-498a211c-5399-11e7-9f1c-7b6689d296ad.png)
 
